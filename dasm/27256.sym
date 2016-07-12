@@ -1,0 +1,21 @@
+message     oberheim matrix 1000 rom
+numformat c
+cpu 6809
+org 0x8000
+code 0x8003 HANDLE_RESET
+code 0x84b4 HANDLE_IRQ
+code 0x85e3 HANDLE_FIRQ
+byte 0x8000 VERSION 3
+
+; 6809 vector table
+vector 0xfff0 VEC_RESERVED
+vector 0xfff2 VEC_SWI_3
+vector 0xfff4 VEC_SWI_2
+vector 0xfff6 VEC_FIRQ
+vector 0xfff8 VEC_IRQ
+vector 0xfffa VEC_SWI_1
+vector 0xfffc VEC_NMI
+vector 0xfffe VEC_RESET
+
+; code caves
+skip 0xe1e8 7688
