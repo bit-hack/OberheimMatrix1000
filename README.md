@@ -1,19 +1,31 @@
 # Oberheim Matrix 1000
 
 This project documents my efforts to reverse engineer the Oberheim Matrix 1000
-CPU interface and develop a modern equivalent.
+CPU interface and develop a modern equivalent.  
+
+## Hardware
+
+- cpu       (MC6800 @ 2Mhz)
+- code rom  (27256 32Kb)
+- patch rom (27512 64Kb)
+- DAC       (DAC312 12bit)
+- Timers    (82C54 3x16bit)
+- UART      (MC68B50)
+- VOICE     (CEM3396 Curtis DCO)
+
 
 ## Files
 
 - images
   - 27256.bin (code ROM)
-  - 27256.bin (patch ROM)
+  - 27512.bin (patch ROM)
   -     *.txt (user readable hex dump)
 
 
 - dasm
   - 27256.lst (code ROM disasembly listing)
   - 27256.sym (DASMx symbol file)
+  - ida.lst   (quick dasm with IDA eval)
 
 
 ## Tools
@@ -85,7 +97,7 @@ schematics in service manual.  Its almost certainly incorrect.
 
         Bank Select - VA13, VA14, VA15
     }
-
+The code rom is
 0x4000
     $ U802 - 27512 (Expansion) {
 
