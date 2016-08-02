@@ -333,7 +333,7 @@ M1C06   EQU     $1C06
 M1C07   EQU     $1C07
 M1C86   EQU     $1C86
 M1C87   EQU     $1C87
-M1D00   EQU     $1D00
+MISCBITS EQU     $1D00
 BANKSELECT EQU     $1D80
 LED7SEG1 EQU     $1E00
 LED7SEG3 EQU     $1F00
@@ -662,9 +662,11 @@ hdlr_RST CLR     BANKSELECT               *8003: 7F 1D 80       '...'
 Z800C   SEIF                             *800C: 1A 50          '.P'    disable interrupts
         LDS     #STACKSTART              *800E: 10 CE 7F FF    '....'  initialize stack location
         LDA     #$FF                     *8012: 86 FF          '..'
+* Next two writes appear to write to bit 7 of U703 and U704 respectively, which are n/c on p3 of original schematic?
         STA     M1C87                    *8014: B7 1C 87       '...'
         STA     M1C07                    *8017: B7 1C 07       '...'
-        STA     M1D00                    *801A: B7 1D 00       '...'
+* assert SYNC1,MUTE, SYNC2 and WAVE
+        STA     MISCBITS                 *801A: B7 1D 00       '...'
         STA     M7235                    *801D: B7 72 35       '.r5'
         JSR     Z81E4                    *8020: BD 81 E4       '...'
         JSR     ZD06E                    *8023: BD D0 6E       '..n'
@@ -845,7 +847,7 @@ Z81BA   CLR     M7C3A                    *81BA: 7F 7C 3A       '.|:'
         LDA     M7235                    *81D4: B6 72 35       '.r5'
         ANDA    #$FD                     *81D7: 84 FD          '..'
         STA     M7235                    *81D9: B7 72 35       '.r5'
-        STA     M1D00                    *81DC: B7 1D 00       '...'
+        STA     MISCBITS                 *81DC: B7 1D 00       '...'
         ANDCC   #$0E                     *81DF: 1C 0E          '..'
         JMP     Z8302                    *81E1: 7E 83 02       '~..'
 Z81E4   LDA     #$32                     *81E4: 86 32          '.2'
@@ -3140,7 +3142,7 @@ Z9571   ASLA                             *9571: 48             'H'
         ANDA    #$03                     *957F: 84 03          '..'
         ORA     M7202                    *9581: BA 72 02       '.r.'
         STA     M7235                    *9584: B7 72 35       '.r5'
-        STA     M1D00                    *9587: B7 1D 00       '...'
+        STA     MISCBITS                 *9587: B7 1D 00       '...'
         LDA     >$0012,X                 *958A: A6 89 00 12    '....'
         LSRA                             *958E: 44             'D'
         LSRA                             *958F: 44             'D'
@@ -7305,7 +7307,7 @@ ZB6BC   SEIF                             *B6BC: 1A 50          '.P'
         CLR     M1C86                    *B6CC: 7F 1C 86       '...'
         CLR     M1C06                    *B6CF: 7F 1C 06       '...'
         LDA     #$2E                     *B6D2: 86 2E          '..'
-        STA     M1D00                    *B6D4: B7 1D 00       '...'
+        STA     MISCBITS                 *B6D4: B7 1D 00       '...'
         RTS                              *B6D7: 39             '9'
 MB6D8   CLR     -$02,U                   *B6D8: 6F 5E          'o^'
         LDD     #M015F                   *B6DA: CC 01 5F       '.._'
