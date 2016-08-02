@@ -18,7 +18,7 @@ LABEL 0x1F00 LED7SEG3
 LABEL 0x1F80 LEDSINGLES
 LABEL 0x2000 PATCHROMSTART
 LABEL 0x4000 EPROMSTART
-LABEL 0x6000 RAMSTART 
+LABEL 0x6000 RAMSTART
 LABEL 0x79F9 IRQHANDLERADDR
 LABEL 0x7FFF STACKSTART
 LABEL 0x803E DELAYLOOP_803E
@@ -28,8 +28,11 @@ CVEC 0xFFF0-0xFFFF
 
 LCOMMENT 0x800C disable interrupts
 LCOMMENT 0x800E initialize stack location
-COMMENT  0x8014 Next two writes appear to write to bit 7 of U703 and U704 respectively, which are n/c on p3 of original schematic?
-COMMENT  0x801a assert SYNC1,MUTE, SYNC2 and WAVE
+COMMENT 0x8014 Next two writes appear to write to bit 7 of U703 and U704 respectively, which are n/c on p3 of original schematic?
+COMMENT 0x801a assert SYNC1,MUTE, SYNC2 and WAVE
+COMMENT 0x806e set default irq delegate
 LCOMMENT 0x8505 UART master reset
 LCOMMENT 0x850a /16, 8N1, interrupts
+COMMENT 0x85e3 irq dispatch
+COMMENT 0x85e7 irq delegate 1
 END
