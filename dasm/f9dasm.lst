@@ -977,13 +977,14 @@ Z8588   CLR     M79A3                    *8588: 7F 79 A3       '.y.'
         FCB     $1A,$BD,$83,$EB          *85BC: 1A BD 83 EB    '....'
         FCC     "~"                      *85C0: 7E             '~'
         FCB     $83,$EB                  *85C1: 83 EB          '..'
-Z85C3   SEF                              *85C3: 1A 40          '.@'
-        CMPX    UARTTXD_RPTR             *85C5: BC 79 97       '.y.'
-        BEQ     Z85D2                    *85C8: 27 08          ''.'
-        STX     UARTTXD_WPTR             *85CA: BF 79 99       '.y.'
-        LDA     #$B5                     *85CD: 86 B5          '..'
-        STA     UARTCSR                  *85CF: B7 14 06       '...'
-Z85D2   CLF                              *85D2: 1C BF          '..'
+* On entry, X = new UART TXD write ptr?
+Z85C3   SEF                              *85C3: 1A 40          '.@'    inhibit UART interrupts
+        CMPX    UARTTXD_RPTR             *85C5: BC 79 97       '.y.'   is X == current read ptr?
+        BEQ     Z85D2                    *85C8: 27 08          ''.'    yes, abort
+        STX     UARTTXD_WPTR             *85CA: BF 79 99       '.y.'   save the write pointer
+        LDA     #%10110101               *85CD: 86 B5          '..'    /16, 8NQ, RX /and/ TX interrupts
+        STA     UARTCSR                  *85CF: B7 14 06       '...'   write the UART status
+Z85D2   CLF                              *85D2: 1C BF          '..'    enable UART interrupts
         RTS                              *85D4: 39             '9'
         FCC     "4"                      *85D5: 34             '4'
         FCB     $06,$FC                  *85D6: 06 FC          '..'
@@ -10135,7 +10136,7 @@ ZD620   LDA     M7490                    *D620: B6 74 90       '.t.'
         BSR     ZD639                    *D629: 8D 0E          '..'
         TFR     U,Y                      *D62B: 1F 32          '.2'
         TFR     Y,D                      *D62D: 1F 20          '. '
-        SUBD    #M0005                   *D62F: 83 00 05       '...'
+        SUBD    #$0005                   *D62F: 83 00 05       '...'
         JSR     Z85C3                    *D632: BD 85 C3       '...'
         INC     M79E1                    *D635: 7C 79 E1       '|y.'
         RTS                              *D638: 39             '9'

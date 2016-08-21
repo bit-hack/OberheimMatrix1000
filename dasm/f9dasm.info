@@ -158,8 +158,21 @@ BIN      0x850B
 
 COMMENT  0x8519 initialise the MIDI receive queue read and write pointers to the bottom of the buffer
 
+COMMENT  0x85C3 On entry, X = new UART TXD write ptr?
+LCOMMENT 0x85C3 inhibit UART interrupts
+LCOMMENT 0x85C5 is X == current read ptr?
+LCOMMENT 0x85C8 yes, abort
+LCOMMENT 0x85CA save the write pointer
+LCOMMENT 0x85CD /16, 8NQ, RX /and/ TX interrupts
+BIN      0x85CE
+LCOMMENT 0x85CF write the UART status
+LCOMMENT 0x85D2 enable UART interrupts
+
+
 LABEL    0x85E7 HANDLEIRQ
 
 
 CONST 0xB271-0xB272 * incorrectly interpreted as address
+
+CONST 0xD630-0xD631
 END
