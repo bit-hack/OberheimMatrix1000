@@ -78,7 +78,7 @@ DATA 0xDDF8-0xFFEF
 LABEL 0x1000 DACBASE
 LABEL 0x1400 UARTBASE
 LABEL 0x1406 UARTCSR
-LABEL 0x1407 UARTTXD
+LABEL 0x1407 UARTDATA
 LABEL 0x1600 PITBASE
 LABEL 0x1800 PUSHBTN07
 LABEL 0x1801 PUSHBTNMISC
@@ -92,11 +92,16 @@ LABEL 0x2000 PATCHROMSTART
 LABEL 0x4000 EPROMSTART
 LABEL 0x6000 RAMSTART 
 LABEL 0x7222 LOOPCOUNTER
+LABEL 0x7593 UARTRXD_START
+LABEL 0x7792 UARTRXD_END
+LABEL 0x7793 UARTTXD_START
+LABEL 0x7992 UARTTXD_END
+LABEL 0x7993 UARTRXD_RPTR * not definite but looks likely by initialisation
+LABEL 0x7995 UARTRXD_WPTR
+LABEL 0x7997 UARTTXD_RPTR
+LABEL 0x7999 UARTTXD_WPTR * not definite but looks likely by initialisation 
 LABEL 0x79F9 IRQHANDLERADDR
-CVEC  0x79F9
 LABEL 0x7FFF STACKSTART
-LABEL 0x803E DELAYLOOP_803E
-LABEL 0x85E7 HANDLEIRQ
 RMB 0xE1E7-0xFFF1
 CVEC 0xFFF0-0xFFFF
 
@@ -104,6 +109,8 @@ LCOMMENT 0x800C disable interrupts
 LCOMMENT 0x800E initialize stack location
 COMMENT  0x8014 Next two writes appear to write to bit 7 of U703 and U704 respectively, which are n/c on p3 of original schematic?
 COMMENT  0x801a assert SYNC1,MUTE, SYNC2 and WAVE
+
+LABEL    0x803E DELAYLOOP_803E
 
 LABEL    0x81E4 ZEROALLVCA1
 COMMENT  0x81E4 Subroutine: ZEROALLVCA1 - Drive 0 to the VCA1 input of all voices
@@ -113,8 +120,45 @@ LABEL    0x81EF LOOP_81EF
 LCOMMENT 0x8200 decrement loop counter...
 LCOMMENT 0x8203 ...and loop again
 
+COMMENT  0x84B4 UART interrupt handler
+LCOMMENT 0x84B4 Save X,A register values
+LCOMMENT 0x84B6 Get the UART status into A
+LCOMMENT 0x84B9 Is there RX data?
+LCOMMENT 0x84BB If RX bit not set, jump
+COMMENT  0x84BD Handle a received MIDI byte 
+LCOMMENT 0x84BD A = received byte
+LCOMMENT 0x84C0 get the write pointer...
+LCOMMENT 0x84C3 ...and store the RX byte in the buffer
+LCOMMENT 0x84C5 is the write ptr at end of buffer?
+LCOMMENT 0x84C8 no, skip the ptr reset
+LCOMMENT 0x84CA yes, set write ptr back to beginning of buffer
+LCOMMENT 0x84D2 store the write ptr
+LCOMMENT 0x84D5 has it caught up with the read ptr?
+
+COMMENT  0x84D8 This conditional branch seems to do the same thing either way
+
+LCOMMENT 0x84DA Restore X,A register values
+LCOMMENT 0x84DC ... and return from interrupt
+
+LCOMMENT 0x84DD Restore X,A register values
+LCOMMENT 0x84DF ... and return from interrupt
+
+LABEL    0x84E0 UART_TXINT
+
+LCOMMENT 0x84F8 /16, 8N1, RX interrupts only
+BIN      0x84F9
+LCOMMENT 0x8502 Restore X,A register values
+LCOMMENT 0x8504 ... and return from interrupt
+
+LABEL    0x8505 INIT_UART
 LCOMMENT 0x8505 UART master reset
-LCOMMENT 0x850a /16, 8N1, interrupts
+BIN      0x8506
+LCOMMENT 0x850A /16, 8N1, RX interrupts only
+BIN      0x850B
+
+COMMENT  0x8519 initialise the MIDI receive queue read and write pointers to the bottom of the buffer
+
+LABEL    0x85E7 HANDLEIRQ
 
 
 CONST 0xB271-0xB272 * incorrectly interpreted as address

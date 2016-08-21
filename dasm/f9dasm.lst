@@ -65,7 +65,7 @@ M00A4   EQU     $00A4
 M00A5   EQU     $00A5
 M00EF   EQU     $00EF
 M0100   EQU     $0100
-M0101_via_cvec_79f9 EQU     $0101
+M0101   EQU     $0101
 M0109   EQU     $0109
 M020C   EQU     $020C
 M0216   EQU     $0216
@@ -123,7 +123,7 @@ M108C   EQU     $108C
 M1102   EQU     $1102
 M11C1   EQU     $11C1
 UARTCSR EQU     $1406
-UARTTXD EQU     $1407
+UARTDATA EQU     $1407
 M1601   EQU     $1601
 M1602   EQU     $1602
 M1603   EQU     $1603
@@ -244,14 +244,14 @@ M7582   EQU     $7582
 M7586   EQU     $7586
 M7591   EQU     $7591
 M7592   EQU     $7592
-M7593   EQU     $7593
-M7792   EQU     $7792
-M7793   EQU     $7793
-M7992   EQU     $7992
-M7993   EQU     $7993
-M7995   EQU     $7995
-M7997   EQU     $7997
-M7999   EQU     $7999
+UARTRXD_START EQU     $7593
+UARTRXD_END EQU     $7792
+UARTTXD_START EQU     $7793
+UARTTXD_END EQU     $7992
+UARTRXD_RPTR EQU     $7993
+UARTRXD_WPTR EQU     $7995
+UARTTXD_RPTR EQU     $7997
+UARTTXD_WPTR EQU     $7999
 M79A1   EQU     $79A1
 M79A2   EQU     $79A2
 M79A3   EQU     $79A3
@@ -548,7 +548,7 @@ Z81A9   LDA     M7C4D                    *81A9: B6 7C 4D       '.|M'
         STA     BANKSELECT               *81AC: B7 1D 80       '...'
         TST     M7C3A                    *81AF: 7D 7C 3A       '}|:'
         BNE     Z81BA                    *81B2: 26 06          '&.'
-        JSR     Z8505                    *81B4: BD 85 05       '...'
+        JSR     INIT_UART                *81B4: BD 85 05       '...'
         JSR     ZDB95                    *81B7: BD DB 95       '...'
 Z81BA   CLR     M7C3A                    *81BA: 7F 7C 3A       '.|:'
         JSR     ZD2B5                    *81BD: BD D2 B5       '...'
@@ -860,54 +860,58 @@ Z8474   ADDD    #M0064                   *8474: C3 00 64       '..d'
         FCC     " "                      *84AE: 20             ' '
         FCB     $03,$CC,$80,$00          *84AF: 03 CC 80 00    '....'
         FCC     "9"                      *84B3: 39             '9'
-hdlr_FIRQ PSHS    X,A                      *84B4: 34 12          '4.'
-        LDA     UARTCSR                  *84B6: B6 14 06       '...'
-        BITA    #$01                     *84B9: 85 01          '..'
-        BEQ     Z84E0                    *84BB: 27 23          ''#'
-        LDA     UARTTXD                  *84BD: B6 14 07       '...'
-        LDX     M7995                    *84C0: BE 79 95       '.y.'
-        STA     ,X+                      *84C3: A7 80          '..'
-        CMPX    #M7792                   *84C5: 8C 77 92       '.w.'
-        BLS     Z84CD                    *84C8: 23 03          '#.'
-        LDX     #M7593                   *84CA: 8E 75 93       '.u.'
+* UART interrupt handler
+hdlr_FIRQ PSHS    X,A                      *84B4: 34 12          '4.'    Save X,A register values
+        LDA     UARTCSR                  *84B6: B6 14 06       '...'   Get the UART status into A
+        BITA    #$01                     *84B9: 85 01          '..'    Is there RX data?
+        BEQ     UART_TXINT               *84BB: 27 23          ''#'    If RX bit not set, jump
+* Handle a received MIDI byte 
+        LDA     UARTDATA                 *84BD: B6 14 07       '...'   A = received byte
+        LDX     UARTRXD_WPTR             *84C0: BE 79 95       '.y.'   get the write pointer...
+        STA     ,X+                      *84C3: A7 80          '..'    ..and store the RX byte in the buffer
+        CMPX    #UARTRXD_END             *84C5: 8C 77 92       '.w.'   is the write ptr at end of buffer?
+        BLS     Z84CD                    *84C8: 23 03          '#.'    no, skip the ptr reset
+        LDX     #UARTRXD_START           *84CA: 8E 75 93       '.u.'   yes, set write ptr back to beginning of buffer
 Z84CD   LDA     #$1E                     *84CD: 86 1E          '..'
         STA     M79A2                    *84CF: B7 79 A2       '.y.'
-        STX     M7995                    *84D2: BF 79 95       '.y.'
-        CMPX    M7993                    *84D5: BC 79 93       '.y.'
+        STX     UARTRXD_WPTR             *84D2: BF 79 95       '.y.'   store the write ptr
+        CMPX    UARTRXD_RPTR             *84D5: BC 79 93       '.y.'   has it caught up with the read ptr?
+* This conditional branch seems to do the same thing either way
         BEQ     Z84DD                    *84D8: 27 03          ''.'
-        PULS    X,A                      *84DA: 35 12          '5.'
-        RTI                              *84DC: 3B             ';'
-Z84DD   PULS    X,A                      *84DD: 35 12          '5.'
-        RTI                              *84DF: 3B             ';'
-Z84E0   LDX     M7997                    *84E0: BE 79 97       '.y.'
+        PULS    X,A                      *84DA: 35 12          '5.'    Restore X,A register values
+        RTI                              *84DC: 3B             ';'     .. and return from interrupt
+Z84DD   PULS    X,A                      *84DD: 35 12          '5.'    Restore X,A register values
+        RTI                              *84DF: 3B             ';'     .. and return from interrupt
+UART_TXINT LDX     UARTTXD_RPTR             *84E0: BE 79 97       '.y.'
         LDA     ,X+                      *84E3: A6 80          '..'
-        STA     UARTTXD                  *84E5: B7 14 07       '...'
-        CMPX    #M7992                   *84E8: 8C 79 92       '.y.'
+        STA     UARTDATA                 *84E5: B7 14 07       '...'
+        CMPX    #UARTTXD_END             *84E8: 8C 79 92       '.y.'
         BLS     Z84F0                    *84EB: 23 03          '#.'
-        LDX     #M7793                   *84ED: 8E 77 93       '.w.'
-Z84F0   STX     M7997                    *84F0: BF 79 97       '.y.'
-        CMPX    M7999                    *84F3: BC 79 99       '.y.'
+        LDX     #UARTTXD_START           *84ED: 8E 77 93       '.w.'
+Z84F0   STX     UARTTXD_RPTR             *84F0: BF 79 97       '.y.'
+        CMPX    UARTTXD_WPTR             *84F3: BC 79 99       '.y.'
         BNE     Z84FD                    *84F6: 26 05          '&.'
-        LDA     #$95                     *84F8: 86 95          '..'
+        LDA     #%10010101               *84F8: 86 95          '..'    /16, 8N1, RX interrupts only
         STA     UARTCSR                  *84FA: B7 14 06       '...'
 Z84FD   LDA     #$14                     *84FD: 86 14          '..'
         STA     M79A1                    *84FF: B7 79 A1       '.y.'
-        PULS    X,A                      *8502: 35 12          '5.'
-        RTI                              *8504: 3B             ';'
-Z8505   LDA     #$03                     *8505: 86 03          '..'    UART master reset
+        PULS    X,A                      *8502: 35 12          '5.'    Restore X,A register values
+        RTI                              *8504: 3B             ';'     .. and return from interrupt
+INIT_UART LDA     #%00000011               *8505: 86 03          '..'    UART master reset
         STA     UARTCSR                  *8507: B7 14 06       '...'
-        LDA     #$95                     *850A: 86 95          '..'    /16, 8N1, interrupts
+        LDA     #%10010101               *850A: 86 95          '..'    /16, 8N1, RX interrupts only
         STA     UARTCSR                  *850C: B7 14 06       '...'
         LDA     #$1E                     *850F: 86 1E          '..'
         STA     M79A2                    *8511: B7 79 A2       '.y.'
         LDA     #$01                     *8514: 86 01          '..'
         STA     M79A1                    *8516: B7 79 A1       '.y.'
-        LDX     #M7593                   *8519: 8E 75 93       '.u.'
-        STX     M7993                    *851C: BF 79 93       '.y.'
-        STX     M7995                    *851F: BF 79 95       '.y.'
-        LDX     #M7793                   *8522: 8E 77 93       '.w.'
-        STX     M7997                    *8525: BF 79 97       '.y.'
-        STX     M7999                    *8528: BF 79 99       '.y.'
+* initialise the MIDI receive queue read and write pointers to the bottom of the buffer
+        LDX     #UARTRXD_START           *8519: 8E 75 93       '.u.'
+        STX     UARTRXD_RPTR             *851C: BF 79 93       '.y.'
+        STX     UARTRXD_WPTR             *851F: BF 79 95       '.y.'
+        LDX     #UARTTXD_START           *8522: 8E 77 93       '.w.'
+        STX     UARTTXD_RPTR             *8525: BF 79 97       '.y.'
+        STX     UARTTXD_WPTR             *8528: BF 79 99       '.y.'
         LDU     #M7C2C                   *852B: CE 7C 2C       '.|,'
         LDD     #MC435                   *852E: CC C4 35       '..5'
         PSHU    D                        *8531: 36 06          '6.'
@@ -925,22 +929,22 @@ Z8505   LDA     #$03                     *8505: 86 03          '..'    UART mast
         FCC     "OJ"                     *855A: 4F 4A          'OJ'
         FCB     $26,$FD,$8D,$A5          *855C: 26 FD 8D A5    '&...'
         FCC     "9"                      *8560: 39             '9'
-Z8561   LDX     M7999                    *8561: BE 79 99       '.y.'
+Z8561   LDX     UARTTXD_WPTR             *8561: BE 79 99       '.y.'
         RTS                              *8564: 39             '9'
         FCB     $86,$F0,$8D              *8565: 86 F0 8D       '...'
         FCC     "#"                      *8568: 23             '#'
         FCB     $86,$10,$8D,$1F,$86,$06  *8569: 86 10 8D 1F 86 06 '......'
         FCC     " "                      *856F: 20             ' '
         FCB     $1B                      *8570: 1B             '.'
-Z8571   LDX     M7999                    *8571: BE 79 99       '.y.'
+Z8571   LDX     UARTTXD_WPTR             *8571: BE 79 99       '.y.'
         CMPA    M7B1A                    *8574: B1 7B 1A       '.{.'
         BEQ     Z8588                    *8577: 27 0F          ''.'
         STA     M7B1A                    *8579: B7 7B 1A       '.{.'
         BRA     Z857E                    *857C: 20 00          ' .'
 Z857E   STA     ,X+                      *857E: A7 80          '..'
-        CMPX    #M7992                   *8580: 8C 79 92       '.y.'
+        CMPX    #UARTTXD_END             *8580: 8C 79 92       '.y.'
         BLS     Z8588                    *8583: 23 03          '#.'
-        LDX     #M7793                   *8585: 8E 77 93       '.w.'
+        LDX     #UARTTXD_START           *8585: 8E 77 93       '.w.'
 Z8588   CLR     M79A3                    *8588: 7F 79 A3       '.y.'
         RTS                              *858B: 39             '9'
         FCB     $A7,$80,$8C              *858C: A7 80 8C       '...'
@@ -974,9 +978,9 @@ Z8588   CLR     M79A3                    *8588: 7F 79 A3       '.y.'
         FCC     "~"                      *85C0: 7E             '~'
         FCB     $83,$EB                  *85C1: 83 EB          '..'
 Z85C3   SEF                              *85C3: 1A 40          '.@'
-        CMPX    M7997                    *85C5: BC 79 97       '.y.'
+        CMPX    UARTTXD_RPTR             *85C5: BC 79 97       '.y.'
         BEQ     Z85D2                    *85C8: 27 08          ''.'
-        STX     M7999                    *85CA: BF 79 99       '.y.'
+        STX     UARTTXD_WPTR             *85CA: BF 79 99       '.y.'
         LDA     #$B5                     *85CD: 86 B5          '..'
         STA     UARTCSR                  *85CF: B7 14 06       '...'
 Z85D2   CLF                              *85D2: 1C BF          '..'
@@ -1006,8 +1010,8 @@ HANDLEIRQ LDA     #$B2                     *85E7: 86 B2          '..'
         STA     M7216                    *8606: B7 72 16       '.r.'
         LDD     M7231                    *8609: FC 72 31       '.r1'
         STD     M7233                    *860C: FD 72 33       '.r3'
-        LDX     M7993                    *860F: BE 79 93       '.y.'
-        CMPX    M7995                    *8612: BC 79 95       '.y.'
+        LDX     UARTRXD_RPTR             *860F: BE 79 93       '.y.'
+        CMPX    UARTRXD_WPTR             *8612: BC 79 95       '.y.'
         BEQ     Z861A                    *8615: 27 03          ''.'
         JSR     ZC42B                    *8617: BD C4 2B       '..+'
 Z861A   LDA     #$60                     *861A: 86 60          '.`'
@@ -7958,14 +7962,14 @@ MC435   FCB     $10,$CE                  *C435: 10 CE          '..'
         FCC     "5"                      *C454: 35             '5'
         FCB     $02                      *C455: 02             '.'
         FCC     "9"                      *C456: 39             '9'
-ZC457   LDX     M7993                    *C457: BE 79 93       '.y.'
-        CMPX    M7995                    *C45A: BC 79 95       '.y.'
+ZC457   LDX     UARTRXD_RPTR             *C457: BE 79 93       '.y.'
+        CMPX    UARTRXD_WPTR             *C45A: BC 79 95       '.y.'
         BEQ     ZC478                    *C45D: 27 19          ''.'
         LDA     ,X+                      *C45F: A6 80          '..'
-        CMPX    #M7792                   *C461: 8C 77 92       '.w.'
+        CMPX    #UARTRXD_END             *C461: 8C 77 92       '.w.'
         BLS     ZC469                    *C464: 23 03          '#.'
-        LDX     #M7593                   *C466: 8E 75 93       '.u.'
-ZC469   STX     M7993                    *C469: BF 79 93       '.y.'
+        LDX     #UARTRXD_START           *C466: 8E 75 93       '.u.'
+ZC469   STX     UARTRXD_RPTR             *C469: BF 79 93       '.y.'
         TSTA                             *C46C: 4D             'M'
         BPL     ZC480                    *C46D: 2A 11          '*.'
         CMPA    #$F8                     *C46F: 81 F8          '..'
@@ -10432,7 +10436,7 @@ ZDB95   JSR     ZDDBF                    *DB95: BD DD BF       '...'
         BSR     ZDBF1                    *DBCD: 8D 22          '."'
         LDA     #$0A                     *DBCF: 86 0A          '..'
         STA     M7B05                    *DBD1: B7 7B 05       '.{.'
-        LDD     #M0101_via_cvec_79f9     *DBD4: CC 01 01       '...'
+        LDD     #M0101                   *DBD4: CC 01 01       '...'
         STD     M7B1B                    *DBD7: FD 7B 1B       '.{.'
         LDA     #$01                     *DBDA: 86 01          '..'
         STA     M7AE7                    *DBDC: B7 7A E7       '.z.'
