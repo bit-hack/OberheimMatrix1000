@@ -91,6 +91,7 @@ LABEL 0x1F80 LEDSINGLES
 LABEL 0x2000 PATCHROMSTART
 LABEL 0x4000 EPROMSTART
 LABEL 0x6000 RAMSTART 
+LABEL 0x7222 LOOPCOUNTER
 LABEL 0x79F9 IRQHANDLERADDR
 CVEC  0x79F9
 LABEL 0x7FFF STACKSTART
@@ -103,6 +104,18 @@ LCOMMENT 0x800C disable interrupts
 LCOMMENT 0x800E initialize stack location
 COMMENT  0x8014 Next two writes appear to write to bit 7 of U703 and U704 respectively, which are n/c on p3 of original schematic?
 COMMENT  0x801a assert SYNC1,MUTE, SYNC2 and WAVE
+
+LABEL    0x81E4 ZEROALLVCA1
+COMMENT  0x81E4 Subroutine: ZEROALLVCA1 - Drive 0 to the VCA1 input of all voices
+LCOMMENT 0x81E4 Iterate 50 times
+DEC 0x81E5
+LABEL    0x81EF LOOP_81EF
+LCOMMENT 0x8200 decrement loop counter...
+LCOMMENT 0x8203 ...and loop again
+
 LCOMMENT 0x8505 UART master reset
 LCOMMENT 0x850a /16, 8N1, interrupts
+
+
+CONST 0xB271-0xB272 * incorrectly interpreted as address
 END
