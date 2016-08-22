@@ -374,7 +374,7 @@ M8000   FCC     "111"                    *8000: 31 31 31       '111'
 hdlr_RST CLR     BANKSELECT               *8003: 7F 1D 80       '...'
         CLR     M7B12                    *8006: 7F 7B 12       '.{.'
         CLR     M7C3A                    *8009: 7F 7C 3A       '.|:'
-Z800C   SEIF                             *800C: 1A 50          '.P'    disable interrupts
+WARM_RESTART SEIF                             *800C: 1A 50          '.P'    disable interrupts
         LDS     #STACKSTART              *800E: 10 CE 7F FF    '....'  initialize stack location
         LDA     #$FF                     *8012: 86 FF          '..'
 * Next two writes appear to write to bit 7 of U703 and U704 respectively, which are n/c on p3 of original schematic?
@@ -523,28 +523,30 @@ Z8171   STA     ,X+                      *8171: A7 80          '..'
         ADDA    #$03                     *8173: 8B 03          '..'
         DECB                             *8175: 5A             'Z'
         BNE     Z8171                    *8176: 26 F9          '&.'
+* Detect some button pushes
+* If Enter is pressed on power up, reinitialize the synth (see owner's manual)
         LDA     PUSHBTNMISC              *8178: B6 18 01       '...'
-        BITA    #$04                     *817B: 85 04          '..'
-        BEQ     Z818A                    *817D: 27 0B          ''.'
-        LDA     #$FF                     *817F: 86 FF          '..'
+        BITA    #%00000100               *817B: 85 04          '..'    Is Enter pressed?
+        BEQ     TEST_BTN9                *817D: 27 0B          ''.'    No, jump
+        LDA     #$FF                     *817F: 86 FF          '..'    Enter pressed
         STA     M7DB1                    *8181: B7 7D B1       '.}.'
         STA     M7B12                    *8184: B7 7B 12       '.{.'
-        JMP     Z800C                    *8187: 7E 80 0C       '~..'
-Z818A   BITA    #$02                     *818A: 85 02          '..'
-        BEQ     Z81A9                    *818C: 27 1B          ''.'
+        JMP     WARM_RESTART             *8187: 7E 80 0C       '~..'   Restart
+* Pressing 3,6,9 together on powerup seems to do something special
+TEST_BTN9 BITA    #%00000010               *818A: 85 02          '..'    is '9' pressed?
+        BEQ     NORMAL_STARTUP           *818C: 27 1B          ''.'    No, jump
 Z818E   LDA     PUSHBTN07                *818E: B6 18 00       '...'
-        CMPA    #$24                     *8191: 81 24          '.$'
-        BNE     Z81A9                    *8193: 26 14          '&.'
+TEST_BTN36 CMPA    #%00100100               *8191: 81 24          '.$'    is '6' and '3' also pressed?
+        BNE     NORMAL_STARTUP           *8193: 26 14          '&.'    No, jump
         LDY     #M81A6                   *8195: 10 8E 81 A6    '....'
         LDX     #M0000                   *8199: 8E 00 00       '...'
         LDB     #$03                     *819C: C6 03          '..'
         JSR     ZD26A                    *819E: BD D2 6A       '..j'
         JSR     ZD088                    *81A1: BD D0 88       '...'
         BRA     Z818E                    *81A4: 20 E8          ' .'
-M81A6   DECA                             *81A6: 4A             'J'
-        COMB                             *81A7: 53             'S'
-        INCA                             *81A8: 4C             'L'
-Z81A9   LDA     M7C4D                    *81A9: B6 7C 4D       '.|M'
+M81A6   FCC     "JSL"                    *81A6: 4A 53 4C       'JSL'
+* No special buttons pressed, normal startup continues
+NORMAL_STARTUP LDA     M7C4D                    *81A9: B6 7C 4D       '.|M'
         STA     BANKSELECT               *81AC: B7 1D 80       '...'
         TST     M7C3A                    *81AF: 7D 7C 3A       '}|:'
         BNE     Z81BA                    *81B2: 26 06          '&.'
@@ -563,7 +565,7 @@ Z81BA   CLR     M7C3A                    *81BA: 7F 7C 3A       '.|:'
         ANDA    #$FD                     *81D7: 84 FD          '..'
         STA     M7235                    *81D9: B7 72 35       '.r5'
         STA     MISCBITS                 *81DC: B7 1D 00       '...'
-        ANDCC   #$0E                     *81DF: 1C 0E          '..'
+        ANDCC   #%00001110               *81DF: 1C 0E          '..'    Enable interrupts (I think- obliterates other flags too)
         JMP     Z8302                    *81E1: 7E 83 02       '~..'
 * Subroutine: ZEROALLVCA1 - Drive 0 to the VCA1 input of all voices
 ZEROALLVCA1 LDA     #50                      *81E4: 86 32          '.2'    Iterate 50 times

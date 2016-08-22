@@ -1,7 +1,9 @@
 FILE ../images/27256.bin 0x8000
 OPTION noflex
 DATA 0x8000-0x8002
-CODE 0x8003-0x821F
+CODE 0x8003-0x81A5
+DATA 0x81A6-0x81A8
+CODE 0x81A9-0x821F
 DATA 0x8220-0x828B
 CODE 0x828C-0x832F
 DATA 0x8330-0x8397
@@ -105,12 +107,36 @@ LABEL 0x7FFF STACKSTART
 RMB 0xE1E7-0xFFF1
 CVEC 0xFFF0-0xFFFF
 
+LABEL    0x800C WARM_RESTART
 LCOMMENT 0x800C disable interrupts
 LCOMMENT 0x800E initialize stack location
 COMMENT  0x8014 Next two writes appear to write to bit 7 of U703 and U704 respectively, which are n/c on p3 of original schematic?
 COMMENT  0x801a assert SYNC1,MUTE, SYNC2 and WAVE
 
 LABEL    0x803E DELAYLOOP_803E
+
+COMMENT  0x8178 Detect some button pushes
+COMMENT  0x8178 If Enter is pressed on power up, reinitialize the synth (see owner's manual)
+LCOMMENT 0x817B Is Enter pressed?
+BIN      0x817C
+LCOMMENT 0x817D No, jump
+LCOMMENT 0x817F Enter pressed
+LCOMMENT 0x8187 Restart
+COMMENT  0x818A Pressing 3,6,9 together on powerup seems to do something special
+LABEL    0x818A TEST_BTN9
+LCOMMENT 0x818A is '9' pressed?
+BIN      0x818B
+LCOMMENT 0x818C No, jump
+LABEL    0x8191 TEST_BTN36
+LCOMMENT 0x8191 is '6' and '3' also pressed?
+BIN      0x8192
+LCOMMENT 0x8193 No, jump
+
+LABEL    0x81A9 NORMAL_STARTUP
+COMMENT  0x81A9 No special buttons pressed, normal startup continues
+
+LCOMMENT 0x81DF Enable interrupts (I think- obliterates other flags too)
+BIN      0x81E0
 
 LABEL    0x81E4 ZEROALLVCA1
 COMMENT  0x81E4 Subroutine: ZEROALLVCA1 - Drive 0 to the VCA1 input of all voices
