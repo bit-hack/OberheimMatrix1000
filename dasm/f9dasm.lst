@@ -579,16 +579,16 @@ Z8171   STA     ,X+                      *8171: A7 80          '..'
 * Ref: http://wolzow.mindworks.ee/analog/m1k-firmware.htm
 TEST_BTN9 BITA    #%00000010               *818A: 85 02          '..'    is '9' pressed?
         BEQ     NORMAL_STARTUP           *818C: 27 1B          ''.'    No, jump
-Z818E   LDA     PUSHBTN07                *818E: B6 18 00       '...'
-TEST_BTN25 CMPA    #%00100100               *8191: 81 24          '.$'    is '5' and '2' also pressed?
+TEST_BTN25 LDA     PUSHBTN07                *818E: B6 18 00       '...'
+        CMPA    #%00100100               *8191: 81 24          '.$'    is '5' and '2' also pressed?
         BNE     NORMAL_STARTUP           *8193: 26 14          '&.'    No, jump
-        LDY     #M81A6                   *8195: 10 8E 81 A6    '....'
+        LDY     #STR_JSL                 *8195: 10 8E 81 A6    '....'  Yes, display the Easter egg
         LDX     #M0000                   *8199: 8E 00 00       '...'
         LDB     #$03                     *819C: C6 03          '..'
         JSR     ZD26A                    *819E: BD D2 6A       '..j'
         JSR     ZD088                    *81A1: BD D0 88       '...'
-        BRA     Z818E                    *81A4: 20 E8          ' .'
-M81A6   FCC     "JSL"                    *81A6: 4A 53 4C       'JSL'
+        BRA     TEST_BTN25               *81A4: 20 E8          ' .'    Display while buttons remain pressed
+STR_JSL FCC     "JSL"                    *81A6: 4A 53 4C       'JSL'   Initials of James S. Letts
 * No special buttons pressed, normal startup continues
 NORMAL_STARTUP LDA     M7C4D                    *81A9: B6 7C 4D       '.|M'
         STA     BANKSELECT               *81AC: B7 1D 80       '...'

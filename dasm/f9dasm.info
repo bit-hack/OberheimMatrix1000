@@ -162,11 +162,15 @@ LABEL    0x818A TEST_BTN9
 LCOMMENT 0x818A is '9' pressed?
 BIN      0x818B
 LCOMMENT 0x818C No, jump
-LABEL    0x8191 TEST_BTN25
+LABEL    0x818E TEST_BTN25
+LCOMMENT 0x81A4 Display while buttons remain pressed
 LCOMMENT 0x8191 is '5' and '2' also pressed?
 BIN      0x8192
 LCOMMENT 0x8193 No, jump
+LCOMMENT 0x8195 Yes, display the Easter egg
 
+LABEL    0x81A6 STR_JSL
+LCOMMENT 0x81A6 Initials of James S. Letts
 LABEL    0x81A9 NORMAL_STARTUP
 COMMENT  0x81A9 No special buttons pressed, normal startup continues
 
