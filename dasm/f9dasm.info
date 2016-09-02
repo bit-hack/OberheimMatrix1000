@@ -132,6 +132,7 @@ LABEL 0x7993 UARTRXD_RPTR * not definite but looks likely by initialisation
 LABEL 0x7995 UARTRXD_WPTR
 LABEL 0x7997 UARTTXD_RPTR
 LABEL 0x7999 UARTTXD_WPTR * not definite but looks likely by initialisation 
+LABEL 0x79C1 STR_BUFFER_MAYBE
 LABEL 0x79F9 IRQHANDLERADDR
 LABEL 0x7FFF STACKSTART
 RMB 0xE1E7-0xFFF1
@@ -263,6 +264,20 @@ LABEL    0xC457 GETMIDIRX
 LCOMMENT 0xC457 Get the RX buffer read pointer
 LCOMMENT 0xC45A Is it the same as the write pointer?
 LCOMMENT 0xC45D yes, nothing to handle, jump
+
+COMMENT 0xD26A Something to do with 7-seg display.
+COMMENT 0xD26A Strips bit 6 from each character in a string
+COMMENT 0xD26A On entry: Y => char string
+COMMENT 0xD26A           B => char count
+COMMENT 0xD26A           X => ???
+LABEL    0xD26A STRIP_BIT_6
+LCOMMENT 0xD26A Set X to point to start of output buffer
+LABEL    0xD26E LOOP_NEXT_CHAR_D26E
+LCOMMENT 0xD26E Get the next character
+LCOMMENT 0xD270 Zap bit 6 (?)
+LCOMMENT 0xD272 Store character in buffer
+LCOMMENT 0xD274 Decrement character count
+LCOMMENT 0xD275 If more characters, do next one
 
 BIN      0xD271
 
