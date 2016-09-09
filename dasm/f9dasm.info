@@ -95,6 +95,8 @@ DATA 0xCD0E-0xCD1F
 CODE 0xCD20-0xD06D
 CODE 0xD06E-0xD15D
 DATA 0xD15E-0xD1A7
+BIN 0xD15E-0xD1A7
+
 CODE 0xD1A8-0xD1FD
 DATA 0xD1FE-0xD245
 CODE 0xD246-0xD27A
@@ -136,8 +138,10 @@ LABEL 0x7993 UARTRXD_RPTR * not definite but looks likely by initialisation
 LABEL 0x7995 UARTRXD_WPTR
 LABEL 0x7997 UARTTXD_RPTR
 LABEL 0x7999 UARTTXD_WPTR * not definite but looks likely by initialisation 
-LABEL 0x79C1 STR_BUFFER_MAYBE
+LABEL 0x79C1 LED_CHAR_BUFFER
 LABEL 0x79F9 IRQHANDLERADDR
+LABEL 0x7A0D LEDSINGLES_SHADOW
+LABEL 0x7C4D BANKSELECT_SHADOW
 LABEL 0x7FFF STACKSTART
 RMB 0xE1E7-0xFFF1
 CVEC 0xFFF0-0xFFFF
@@ -152,6 +156,10 @@ COMMENT  0x801a assert SYNC1,MUTE, SYNC2 and WAVE
 LCOMMENT 0x802A B = char count
 
 LABEL    0x803E DELAYLOOP_803E
+
+COMMENT  0x8045 Initialize the bank select logic and a shadow variable for it to zero.
+
+COMMENT  0x806B Initialize the interrupt handler trampoline
 
 COMMENT  0x8178 Detect some button pushes
 COMMENT  0x8178 If Enter is pressed on power up, reinitialize the synth (see owner's manual)
@@ -291,11 +299,41 @@ LCOMMENT 0xC457 Get the RX buffer read pointer
 LCOMMENT 0xC45A Is it the same as the write pointer?
 LCOMMENT 0xC45D yes, nothing to handle, jump
 
-COMMENT 0xD26A Something to do with 7-seg display.
-COMMENT 0xD26A Strips bit 6 from each character in a string
-COMMENT 0xD26A On entry: Y => char string
-COMMENT 0xD26A           B => char count
-COMMENT 0xD26A           X => ???
+COMMENT  0xD088 GDE: I think this is the subroutine that displays/refreshes the LED
+LCOMMENT 0xD088 Get the current state of the individual decimal point LEDs
+LCOMMENT 0xD08B LED logic is active low so invert the value
+LCOMMENT 0xD08C write the value to the hardware
+
+COMMENT  0xD136 On entry, A = ASCII code of character to be displayed
+LABEL    0xD136 DISPLAY_LED_CHAR
+LCOMMENT 0xD136 Strip the top bit of the character
+LCOMMENT 0xD13B Is it a space?
+LCOMMENT 0xD13D yes, jump
+LCOMMENT 0xD13F is it a '-'?
+LCOMMENT 0xD141 yes, jump
+LCOMMENT 0xD143 0x30 = '0'; anything lower is a symbol, higher is alphanumeric
+LCOMMENT 0xD147 Use a different look up table
+LCOMMENT 0xD14A and offset from '0'
+LABEL    0xD14C LOOKUP_LED_CHAR
+
+COMMENT  0xD150 Character to be displayed is a '-'
+LABEL    0xD150 DISPLAY_HYPHEN
+COMMENT  0xD154 Character to be displayed is a space
+LABEL    0xD154 DISPLAY_SPACE
+
+COMMENT  0xD155 At this point, A contains the LED segment data for the character to be written
+LABEL    0xD155 WRITE_RAW_CHAR
+
+LABEL    0xD15A INVERT_RAW_CHAR
+LCOMMENT 0xD15A Invert for active low logic
+LCOMMENT 0xD15B Write to the hardware pointed to by U
+LCOMMENT 0xD15D ...and we're done
+
+COMMENT  0xD26A Something to do with 7-seg display.
+COMMENT  0xD26A Strips bit 6 from each character in a string
+COMMENT  0xD26A On entry: Y => char string
+COMMENT  0xD26A           B => char count
+COMMENT  0xD26A           X => ???
 LABEL    0xD26A STRIP_BIT_6
 LCOMMENT 0xD26A Set X to point to start of output buffer
 LABEL    0xD26E LOOP_NEXT_CHAR_D26E

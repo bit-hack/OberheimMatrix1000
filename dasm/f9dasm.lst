@@ -284,7 +284,7 @@ M79BD   EQU     $79BD
 M79BE   EQU     $79BE
 M79BF   EQU     $79BF
 M79C0   EQU     $79C0
-STR_BUFFER_MAYBE EQU     $79C1
+LED_CHAR_BUFFER EQU     $79C1
 M79E1   EQU     $79E1
 M79E3   EQU     $79E3
 M79E4   EQU     $79E4
@@ -304,7 +304,7 @@ M7A08   EQU     $7A08
 M7A09   EQU     $7A09
 M7A0B   EQU     $7A0B
 M7A0C   EQU     $7A0C
-M7A0D   EQU     $7A0D
+LEDSINGLES_SHADOW EQU     $7A0D
 M7A0E   EQU     $7A0E
 M7A0F   EQU     $7A0F
 M7A10   EQU     $7A10
@@ -383,7 +383,7 @@ M7C43   EQU     $7C43
 M7C49   EQU     $7C49
 M7C4A   EQU     $7C4A
 M7C4B   EQU     $7C4B
-M7C4D   EQU     $7C4D
+BANKSELECT_SHADOW EQU     $7C4D
 M7C53   EQU     $7C53
 M7C5B   EQU     $7C5B
 M7C75_via_cvec_c1be EQU     $7C75
@@ -438,9 +438,10 @@ WARM_RESTART SEIF                             *800C: 1A 50          '.P'    disa
 DELAYLOOP_803E DEX                              *803E: 30 1F          '0.'
         BNE     DELAYLOOP_803E           *8040: 26 FC          '&.'
         JSR     Z828C                    *8042: BD 82 8C       '...'
+* Initialize the bank select logic and a shadow variable for it to zero.
         LDA     #$00                     *8045: 86 00          '..'
         STA     BANKSELECT               *8047: B7 1D 80       '...'
-        STA     M7C4D                    *804A: B7 7C 4D       '.|M'
+        STA     BANKSELECT_SHADOW        *804A: B7 7C 4D       '.|M'
         LDA     #$B6                     *804D: 86 B6          '..'
         STA     M1603                    *804F: B7 16 03       '...'
         LDB     #$40                     *8052: C6 40          '.@'
@@ -453,6 +454,7 @@ DELAYLOOP_803E DEX                              *803E: 30 1F          '0.'
         STA     M1603                    *8063: B7 16 03       '...'
         LDA     #$3F                     *8066: 86 3F          '.?'
         STA     M7223                    *8068: B7 72 23       '.r#'
+* Initialize the interrupt handler trampoline
         LDX     #HANDLEIRQ               *806B: 8E 85 E7       '...'
         STX     IRQHANDLERADDR           *806E: BF 79 F9       '.y.'
         JSR     Z828C                    *8071: BD 82 8C       '...'
@@ -590,7 +592,7 @@ TEST_BTN25 LDA     PUSHBTN07                *818E: B6 18 00       '...'
         BRA     TEST_BTN25               *81A4: 20 E8          ' .'    Display while buttons remain pressed
 STR_JSL FCC     "JSL"                    *81A6: 4A 53 4C       'JSL'   Initials of James S. Letts
 * No special buttons pressed, normal startup continues
-NORMAL_STARTUP LDA     M7C4D                    *81A9: B6 7C 4D       '.|M'
+NORMAL_STARTUP LDA     BANKSELECT_SHADOW        *81A9: B6 7C 4D       '.|M'
         STA     BANKSELECT               *81AC: B7 1D 80       '...'
         TST     M7C3A                    *81AF: 7D 7C 3A       '}|:'
         BNE     Z81BA                    *81B2: 26 06          '&.'
@@ -7222,7 +7224,7 @@ ZBCF2   FCC     "}u0"                    *BCF2: 7D 75 30       '}u0'
         FCC     "9"                      *BD5B: 39             '9'
 ZBD5C   JSR     ZD1A8                    *BD5C: BD D1 A8       '...'
         LDB     #$80                     *BD5F: C6 80          '..'
-        STB     M7A0D                    *BD61: F7 7A 0D       '.z.'
+        STB     LEDSINGLES_SHADOW        *BD61: F7 7A 0D       '.z.'
         LDD     M7AD7                    *BD64: FC 7A D7       '.z.'
         LDX     #M0002                   *BD67: 8E 00 02       '...'
         JSR     ZD246                    *BD6A: BD D2 46       '..F'
@@ -7569,7 +7571,7 @@ ZC044   JSR     ZD1A8                    *C044: BD D1 A8       '...'
         RTS                              *C056: 39             '9'
         JSR     ZD1A8                    *C057: BD D1 A8       '...'
         LDB     #$04                     *C05A: C6 04          '..'
-        STB     M7A0D                    *C05C: F7 7A 0D       '.z.'
+        STB     LEDSINGLES_SHADOW        *C05C: F7 7A 0D       '.z.'
         LDA     M79E4                    *C05F: B6 79 E4       '.y.'
         LDB     #$01                     *C062: C6 01          '..'
         LDX     #M0000                   *C064: 8E 00 00       '...'
@@ -7659,7 +7661,7 @@ MC10E   LDA     M7AB3                    *C10E: B6 7A B3       '.z.'
         RTS                              *C11C: 39             '9'
 ZC11D   JSR     ZD1A8                    *C11D: BD D1 A8       '...'
         LDB     #$01                     *C120: C6 01          '..'
-        STB     M7A0D                    *C122: F7 7A 0D       '.z.'
+        STB     LEDSINGLES_SHADOW        *C122: F7 7A 0D       '.z.'
         LDA     M7AB3                    *C125: B6 7A B3       '.z.'
         LDB     #$08                     *C128: C6 08          '..'
         MUL                              *C12A: 3D             '='
@@ -9292,7 +9294,7 @@ ZD060   RTS                              *D060: 39             '9'
         RTS                              *D06C: 39             '9'
         RTS                              *D06D: 39             '9'
 ZD06E   CLRA                             *D06E: 4F             'O'
-        STA     M7A0D                    *D06F: B7 7A 0D       '.z.'
+        STA     LEDSINGLES_SHADOW        *D06F: B7 7A 0D       '.z.'
         STA     M7A0F                    *D072: B7 7A 0F       '.z.'
         STA     M7A0E                    *D075: B7 7A 0E       '.z.'
         STA     M7A10                    *D078: B7 7A 10       '.z.'
@@ -9302,9 +9304,10 @@ ZD06E   CLRA                             *D06E: 4F             'O'
 ZD081   JSR     ZD1A8                    *D081: BD D1 A8       '...'
         JSR     ZD0FF                    *D084: BD D0 FF       '...'
         RTS                              *D087: 39             '9'
-ZD088   LDA     M7A0D                    *D088: B6 7A 0D       '.z.'
-        COMA                             *D08B: 43             'C'
-        STA     LEDSINGLES               *D08C: B7 1F 80       '...'
+* GDE: I think this is the subroutine that displays/refreshes the LED
+ZD088   LDA     LEDSINGLES_SHADOW        *D088: B6 7A 0D       '.z.'   Get the current state of the individual decimal point LEDs
+        COMA                             *D08B: 43             'C'     LED logic is active low so invert the value
+        STA     LEDSINGLES               *D08C: B7 1F 80       '...'   write the value to the hardware
         JSR     ZD0B6                    *D08F: BD D0 B6       '...'
         LDX     #M0000                   *D092: 8E 00 00       '...'
         TST     M752A                    *D095: 7D 75 2A       '}u*'
@@ -9354,7 +9357,7 @@ ZD0FA   INS                              *D0FA: 32 61          '2a'
         PULS    X,DP,D                   *D0FC: 35 1E          '5.'
         RTS                              *D0FE: 39             '9'
 ZD0FF   LDB     #$03                     *D0FF: C6 03          '..'
-        LDX     #STR_BUFFER_MAYBE        *D101: 8E 79 C1       '.y.'
+        LDX     #LED_CHAR_BUFFER         *D101: 8E 79 C1       '.y.'
         PSHS    X,B                      *D104: 34 14          '4.'
         LDU     #LED7SEG1                *D106: CE 1E 00       '...'
 ZD109   LDA     [$01,S]                  *D109: A6 F8 01       '...'
@@ -9371,72 +9374,79 @@ ZD11F   CLRB                             *D11F: 5F             '_'
         BITA    #$40                     *D120: 85 40          '.@'
         BEQ     ZD125                    *D122: 27 01          ''.'
         INCB                             *D124: 5C             '\'
-ZD125   JSR     ZD136                    *D125: BD D1 36       '..6'
+ZD125   JSR     DISPLAY_LED_CHAR         *D125: BD D1 36       '..6'
         LEAU    $0080,U                  *D128: 33 C9 00 80    '3...'
         DEC     ,S                       *D12C: 6A E4          'j.'
         BNE     ZD109                    *D12E: 26 D9          '&.'
         LEAS    $03,S                    *D130: 32 63          '2c'
         CLR     M79E1                    *D132: 7F 79 E1       '.y.'
         RTS                              *D135: 39             '9'
-ZD136   ANDA    #$3F                     *D136: 84 3F          '.?'
+* On entry, A = ASCII code of character to be displayed
+DISPLAY_LED_CHAR ANDA    #$3F                     *D136: 84 3F          '.?'    Strip the top bit of the character
         LDX     #MD16F                   *D138: 8E D1 6F       '..o'
-        CMPA    #$20                     *D13B: 81 20          '. '
-        BEQ     ZD154                    *D13D: 27 15          ''.'
-        CMPA    #$2D                     *D13F: 81 2D          '.-'
-        BEQ     ZD150                    *D141: 27 0D          ''.'
-        CMPA    #$30                     *D143: 81 30          '.0'
-        BLT     ZD14C                    *D145: 2D 05          '-.'
-        LDX     #MD15E                   *D147: 8E D1 5E       '..^'
-        SUBA    #$30                     *D14A: 80 30          '.0'
-ZD14C   LDA     A,X                      *D14C: A6 86          '..'
-        BRA     ZD155                    *D14E: 20 05          ' .'
-ZD150   LDA     #$08                     *D150: 86 08          '..'
-        BRA     ZD155                    *D152: 20 01          ' .'
-ZD154   CLRA                             *D154: 4F             'O'
-ZD155   TSTB                             *D155: 5D             ']'
-        BEQ     ZD15A                    *D156: 27 02          ''.'
+        CMPA    #'                       *D13B: 81 20          '. '    Is it a space?
+        BEQ     DISPLAY_SPACE            *D13D: 27 15          ''.'    yes, jump
+        CMPA    #$2D                     *D13F: 81 2D          '.-'    is it a '-'?
+        BEQ     DISPLAY_HYPHEN           *D141: 27 0D          ''.'    yes, jump
+        CMPA    #$30                     *D143: 81 30          '.0'    0x30 = '0'; anything lower is a symbol, higher is alphanumeric
+        BLT     LOOKUP_LED_CHAR          *D145: 2D 05          '-.'
+        LDX     #MD15E                   *D147: 8E D1 5E       '..^'   Use a different look up table
+        SUBA    #$30                     *D14A: 80 30          '.0'    and offset from '0'
+LOOKUP_LED_CHAR LDA     A,X                      *D14C: A6 86          '..'
+        BRA     WRITE_RAW_CHAR           *D14E: 20 05          ' .'
+* Character to be displayed is a '-'
+DISPLAY_HYPHEN LDA     #$08                     *D150: 86 08          '..'
+        BRA     WRITE_RAW_CHAR           *D152: 20 01          ' .'
+* Character to be displayed is a space
+DISPLAY_SPACE CLRA                             *D154: 4F             'O'
+* At this point, A contains the LED segment data for the character to be written
+WRITE_RAW_CHAR TSTB                             *D155: 5D             ']'
+        BEQ     INVERT_RAW_CHAR          *D156: 27 02          ''.'
         ORA     #$04                     *D158: 8A 04          '..'
-ZD15A   COMA                             *D15A: 43             'C'
-        STA     ,U                       *D15B: A7 C4          '..'
-        RTS                              *D15D: 39             '9'
-MD15E   FCB     $F3                      *D15E: F3             '.'
-        FCC     "A;y"                    *D15F: 41 3B 79       'A;y'
-        FCB     $C9,$F8,$FA              *D162: C9 F8 FA       '...'
-        FCC     "Q"                      *D165: 51             'Q'
-        FCB     $FB,$F9,$00,$00,$00,$00  *D166: FB F9 00 00 00 00 '......'
-        FCB     $00,$00,$00              *D16C: 00 00 00       '...'
-MD16F   FCB     $00,$DB,$EA,$B2          *D16F: 00 DB EA B2    '....'
-        FCC     "k"                      *D173: 6B             'k'
-        FCB     $BA,$9A,$F2,$CB,$02      *D174: BA 9A F2 CB 02 '.....'
-        FCC     "c"                      *D179: 63             'c'
-        FCB     $8A,$A2                  *D17A: 8A A2          '..'
-        FCC     "JJj"                    *D17C: 4A 4A 6A       'JJj'
-        FCB     $9B,$BB,$0A,$F8,$AA,$E3  *D17F: 9B BB 0A F8 AA E3 '......'
-        FCB     $C8,$C9                  *D185: C8 C9          '..'
-        FCC     "+|y"                    *D187: 2B 7C 79       '+|y'
-        FCB     $E1                      *D18A: E1             '.'
-        FCC     "0"                      *D18B: 30             '0'
-        FCB     $89                      *D18C: 89             '.'
-        FCC     "y"                      *D18D: 79             'y'
-        FCB     $C1,$86,$01,$B7          *D18E: C1 86 01 B7    '....'
-        FCC     "y"                      *D192: 79             'y'
-        FCB     $EC,$7F                  *D193: EC 7F          '..'
-        FCC     "y"                      *D195: 79             'y'
-        FCB     $EB,$86,$80              *D196: EB 86 80       '...'
-        FCC     "~"                      *D199: 7E             '~'
-        FCB     $83                      *D19A: 83             '.'
-        FCC     "0|y"                    *D19B: 30 7C 79       '0|y'
-        FCB     $E1                      *D19E: E1             '.'
-        FCC     "0"                      *D19F: 30             '0'
-        FCB     $89                      *D1A0: 89             '.'
-        FCC     "y"                      *D1A1: 79             'y'
-        FCB     $C1,$86,$80              *D1A2: C1 86 80       '...'
-        FCC     "~"                      *D1A5: 7E             '~'
-        FCB     $83                      *D1A6: 83             '.'
-        FCC     ">"                      *D1A7: 3E             '>'
+INVERT_RAW_CHAR COMA                             *D15A: 43             'C'     Invert for active low logic
+        STA     ,U                       *D15B: A7 C4          '..'    Write to the hardware pointed to by U
+        RTS                              *D15D: 39             '9'     ..and we're done
+MD15E   FCB     %11110011,%01000001      *D15E: F3 41          '.A'
+        FCB     %00111011,%01111001      *D160: 3B 79          ';y'
+        FCB     %11001001,%11111000      *D162: C9 F8          '..'
+        FCB     %11111010,%01010001      *D164: FA 51          '.Q'
+        FCB     %11111011,%11111001      *D166: FB F9          '..'
+        FCB     %00000000,%00000000      *D168: 00 00          '..'
+        FCB     %00000000,%00000000      *D16A: 00 00          '..'
+        FCB     %00000000,%00000000      *D16C: 00 00          '..'
+        FCB     %00000000                *D16E: 00             '.'
+MD16F   FCB     %00000000,%11011011      *D16F: 00 DB          '..'
+        FCB     %11101010,%10110010      *D171: EA B2          '..'
+        FCB     %01101011,%10111010      *D173: 6B BA          'k.'
+        FCB     %10011010,%11110010      *D175: 9A F2          '..'
+        FCB     %11001011,%00000010      *D177: CB 02          '..'
+        FCB     %01100011,%10001010      *D179: 63 8A          'c.'
+        FCB     %10100010,%01001010      *D17B: A2 4A          '.J'
+        FCB     %01001010,%01101010      *D17D: 4A 6A          'Jj'
+        FCB     %10011011,%10111011      *D17F: 9B BB          '..'
+        FCB     %00001010,%11111000      *D181: 0A F8          '..'
+        FCB     %10101010,%11100011      *D183: AA E3          '..'
+        FCB     %11001000,%11001001      *D185: C8 C9          '..'
+        FCB     %00101011,%01111100      *D187: 2B 7C          '+|'
+        FCB     %01111001,%11100001      *D189: 79 E1          'y.'
+        FCB     %00110000,%10001001      *D18B: 30 89          '0.'
+        FCB     %01111001,%11000001      *D18D: 79 C1          'y.'
+        FCB     %10000110,%00000001      *D18F: 86 01          '..'
+        FCB     %10110111,%01111001      *D191: B7 79          '.y'
+        FCB     %11101100,%01111111      *D193: EC 7F          '..'
+        FCB     %01111001,%11101011      *D195: 79 EB          'y.'
+        FCB     %10000110,%10000000      *D197: 86 80          '..'
+        FCB     %01111110,%10000011      *D199: 7E 83          '~.'
+        FCB     %00110000,%01111100      *D19B: 30 7C          '0|'
+        FCB     %01111001,%11100001      *D19D: 79 E1          'y.'
+        FCB     %00110000,%10001001      *D19F: 30 89          '0.'
+        FCB     %01111001,%11000001      *D1A1: 79 C1          'y.'
+        FCB     %10000110,%10000000      *D1A3: 86 80          '..'
+        FCB     %01111110,%10000011      *D1A5: 7E 83          '~.'
+        FCB     %00111110                *D1A7: 3E             '>'
 ZD1A8   LDX     #M0000                   *D1A8: 8E 00 00       '...'
         LDB     #$10                     *D1AB: C6 10          '..'
-        LEAX    STR_BUFFER_MAYBE,X       *D1AD: 30 89 79 C1    '0.y.'
+        LEAX    LED_CHAR_BUFFER,X        *D1AD: 30 89 79 C1    '0.y.'
 ZD1B1   LDA     #$20                     *D1B1: 86 20          '. '
         STA     ,X+                      *D1B3: A7 80          '..'
         DECB                             *D1B5: 5A             'Z'
@@ -9536,7 +9546,7 @@ ZD251   TFR     A,B                      *D251: 1F 89          '..'
 * On entry: Y => char string
 * B => char count
 * X => ???
-STRIP_BIT_6 LEAX    STR_BUFFER_MAYBE,X       *D26A: 30 89 79 C1    '0.y.'  Set X to point to start of output buffer
+STRIP_BIT_6 LEAX    LED_CHAR_BUFFER,X        *D26A: 30 89 79 C1    '0.y.'  Set X to point to start of output buffer
 LOOP_NEXT_CHAR_D26E LDA     ,Y+                      *D26E: A6 A0          '..'    Get the next character
         ANDA    #%10111111               *D270: 84 BF          '..'    Zap bit 6 (?)
         STA     ,X+                      *D272: A7 80          '..'    Store character in buffer
@@ -9563,12 +9573,12 @@ LOOP_NEXT_CHAR_D26E LDA     ,Y+                      *D26E: A6 A0          '..' 
         FCB     $04                      *D292: 04             '.'
         FCC     " "                      *D293: 20             ' '
         FCB     $D5                      *D294: D5             '.'
-ZD295   LEAX    STR_BUFFER_MAYBE,X       *D295: 30 89 79 C1    '0.y.'
+ZD295   LEAX    LED_CHAR_BUFFER,X        *D295: 30 89 79 C1    '0.y.'
         LDA     ,X                       *D299: A6 84          '..'
         ORA     #$40                     *D29B: 8A 40          '.@'
         STA     ,X                       *D29D: A7 84          '..'
         RTS                              *D29F: 39             '9'
-ZD2A0   LEAX    STR_BUFFER_MAYBE,X       *D2A0: 30 89 79 C1    '0.y.'
+ZD2A0   LEAX    LED_CHAR_BUFFER,X        *D2A0: 30 89 79 C1    '0.y.'
         LDA     ,X                       *D2A4: A6 84          '..'
         ANDA    #$BF                     *D2A6: 84 BF          '..'
         STA     ,X                       *D2A8: A7 84          '..'
