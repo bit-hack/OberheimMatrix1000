@@ -153,8 +153,16 @@ LCOMMENT 0x800E initialize stack location
 COMMENT  0x8014 Next two writes appear to write to bit 7 of U703 and U704 respectively, which are n/c on p3 of original schematic?
 COMMENT  0x801a assert SYNC1,MUTE, SYNC2 and WAVE
 
+LCOMMENT 0x8026 Y => version string
 LCOMMENT 0x802A B = char count
-
+LCOMMENT 0x802C X = char buffer starting offset
+CONST    0x802D-0x802E
+LCOMMENT 0x802F Load up the LED character buffer
+LCOMMENT 0x8032 Reset the char buffer starting offset
+CONST    0x8033-0x8034
+COMMENT  0x803B Delay by looping 15000 times
+LCOMMENT 0x803B X = 15000 dec.
+CONST    0x803C-0x803D
 LABEL    0x803E DELAYLOOP_803E
 
 COMMENT  0x8045 Initialize the bank select logic and a shadow variable for it to zero.
@@ -304,7 +312,9 @@ LCOMMENT 0xD088 Get the current state of the individual decimal point LEDs
 LCOMMENT 0xD08B LED logic is active low so invert the value
 LCOMMENT 0xD08C write the value to the hardware
 
+COMMENT  0xD136 Subroutine: DISPLAY_LED_CHAR
 COMMENT  0xD136 On entry, A = ASCII code of character to be displayed
+COMMENT  0xD136 B is non-zero when the decimal point is to be set as well
 LABEL    0xD136 DISPLAY_LED_CHAR
 LCOMMENT 0xD136 Strip the top bit of the character
 LCOMMENT 0xD13B Is it a space?
@@ -322,28 +332,94 @@ COMMENT  0xD154 Character to be displayed is a space
 LABEL    0xD154 DISPLAY_SPACE
 
 COMMENT  0xD155 At this point, A contains the LED segment data for the character to be written
+COMMENT  0xD155 and B is non-zero if the decimal point is to be set as wel
 LABEL    0xD155 WRITE_RAW_CHAR
-
+LCOMMENT 0xD155 If B non-zero, LED DP needs to be set
+LCOMMENT 0xD158 Set the decimal point
+BIN      0xD159
 LABEL    0xD15A INVERT_RAW_CHAR
 LCOMMENT 0xD15A Invert for active low logic
 LCOMMENT 0xD15B Write to the hardware pointed to by U
 LCOMMENT 0xD15D ...and we're done
+
+LABEL    0xD15E LED_RAW_NUMERIC
+LCOMMENT 0xD15E '0'
+LCOMMENT 0xD15F '1'
+LCOMMENT 0xD160 '2'
+LCOMMENT 0xD161 '3'
+LCOMMENT 0xD162 '4'
+LCOMMENT 0xD163 '5'
+LCOMMENT 0xD164 '6'
+LCOMMENT 0xD165 '7'
+LCOMMENT 0xD166 '8'
+LCOMMENT 0xD167 '9'
+LCOMMENT 0xD168 not used
+
+LABEL    0xD16F LED_RAW_ALPHA
+LCOMMENT 0xD16F ' '
+LCOMMENT 0xD170 'A'
+LCOMMENT 0xD171 'b'
+LCOMMENT 0xD172 'C'
+LCOMMENT 0xD173 'd'
+LCOMMENT 0xD174 'E'
+LCOMMENT 0xD175 'F'
+LCOMMENT 0xD176 'G'
+LCOMMENT 0xD177 'H'
+LCOMMENT 0xD178 'I'
+LCOMMENT 0xD179 'J'
+LCOMMENT 0xD17A 'K'
+LCOMMENT 0xD17B 'L'
+LCOMMENT 0xD17C 'M'
+LCOMMENT 0xD17D 'N'
+LCOMMENT 0xD17E 'O'
+LCOMMENT 0xD17F 'P'
+LCOMMENT 0xD180 'Q'
+LCOMMENT 0xD181 'r'
+LCOMMENT 0xD182 'S'
+LCOMMENT 0xD183 'T'
+LCOMMENT 0xD184 'u'
+LCOMMENT 0xD185 'v'
+LCOMMENT 0xD186 'w'
+LCOMMENT 0xD187 'x'
+LCOMMENT 0xD188 'y'
+LCOMMENT 0xD189 'z'
+LCOMMENT 0xD18A Here down are some symbolic non-ASCII codings
 
 COMMENT  0xD26A Something to do with 7-seg display.
 COMMENT  0xD26A Strips bit 6 from each character in a string
 COMMENT  0xD26A On entry: Y => char string
 COMMENT  0xD26A           B => char count
 COMMENT  0xD26A           X => ???
-LABEL    0xD26A STRIP_BIT_6
+LABEL    0xD26A LOAD_LED_CHAR_BUFFER
 LCOMMENT 0xD26A Set X to point to start of output buffer
 LABEL    0xD26E LOOP_NEXT_CHAR_D26E
 LCOMMENT 0xD26E Get the next character
 LCOMMENT 0xD270 Zap bit 6 (?)
+BIN      0xD271
 LCOMMENT 0xD272 Store character in buffer
 LCOMMENT 0xD274 Decrement character count
 LCOMMENT 0xD275 If more characters, do next one
 
-BIN      0xD271
+LABEL    0xD295 SET_CHAR_BIT_6
+COMMENT  0xD295 Set bit 6 on a single character in the LED char buffer.
+COMMENT  0xD295 Not entirely sure why.
+COMMENT  0xD295 On entry, X = offset in char buffer to set bit 6 on
+LCOMMENT 0xD295 X => indexed address in char buffer
+LCOMMENT 0xD299 A = indexed character
+LCOMMENT 0xD29B Set bit 6
+BIN      0xD29C
+LCOMMENT 0xD29D Store the char back in place
+
+LABEL    0xD2A0 CLR_CHAR_BIT_6
+COMMENT  0xD2A0 Clear bit 6 on a single character in the LED char buffer.
+COMMENT  0xD2A0 Not entirely sure why.
+COMMENT  0xD2A0 On entry, X = offset in char buffer to clear bit 6 on
+LCOMMENT 0xD2A0 X => indexed address in char buffer
+LCOMMENT 0xD2A4 A = indexed character
+LCOMMENT 0xD2A6 Cleat bit 6
+BIN      0xD2A7
+LCOMMENT 0xD2A8 Store the char back in place
+
 
 CONST    0xD630-0xD631
 END

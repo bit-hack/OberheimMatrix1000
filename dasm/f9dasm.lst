@@ -158,7 +158,6 @@ M2F18   EQU     $2F18
 M312D   EQU     $312D
 M3800   EQU     $3800
 M39B6_via_cvec_c1b4 EQU     $39B6
-M3A98   EQU     $3A98
 M3B0D   EQU     $3B0D
 M3C80   EQU     $3C80
 M3F00   EQU     $3F00
@@ -427,14 +426,15 @@ WARM_RESTART SEIF                             *800C: 1A 50          '.P'    disa
         STA     M7235                    *801D: B7 72 35       '.r5'
         JSR     ZEROALLVCA1              *8020: BD 81 E4       '...'
         JSR     ZD06E                    *8023: BD D0 6E       '..n'
-        LDY     #VERSION                 *8026: 10 8E 80 00    '....'
+        LDY     #VERSION                 *8026: 10 8E 80 00    '....'  Y => version string
         LDB     #$03                     *802A: C6 03          '..'    B = char count
-        LDX     #M0000                   *802C: 8E 00 00       '...'
-        JSR     STRIP_BIT_6              *802F: BD D2 6A       '..j'
-        LDX     #M0000                   *8032: 8E 00 00       '...'
-        JSR     ZD295                    *8035: BD D2 95       '...'
+        LDX     #$0000                   *802C: 8E 00 00       '...'   X = char buffer starting offset
+        JSR     LOAD_LED_CHAR_BUFFER     *802F: BD D2 6A       '..j'   Load up the LED character buffer
+        LDX     #$0000                   *8032: 8E 00 00       '...'   Reset the char buffer starting offset
+        JSR     SET_CHAR_BIT_6           *8035: BD D2 95       '...'
         JSR     ZD088                    *8038: BD D0 88       '...'
-        LDX     #M3A98                   *803B: 8E 3A 98       '.:.'
+* Delay by looping 15000 times
+        LDX     #$3A98                   *803B: 8E 3A 98       '.:.'   X = 15000 dec.
 DELAYLOOP_803E DEX                              *803E: 30 1F          '0.'
         BNE     DELAYLOOP_803E           *8040: 26 FC          '&.'
         JSR     Z828C                    *8042: BD 82 8C       '...'
@@ -587,7 +587,7 @@ TEST_BTN25 LDA     PUSHBTN07                *818E: B6 18 00       '...'
         LDY     #STR_JSL                 *8195: 10 8E 81 A6    '....'  Yes, display the Easter egg
         LDX     #M0000                   *8199: 8E 00 00       '...'
         LDB     #$03                     *819C: C6 03          '..'
-        JSR     STRIP_BIT_6              *819E: BD D2 6A       '..j'
+        JSR     LOAD_LED_CHAR_BUFFER     *819E: BD D2 6A       '..j'
         JSR     ZD088                    *81A1: BD D0 88       '...'
         BRA     TEST_BTN25               *81A4: 20 E8          ' .'    Display while buttons remain pressed
 STR_JSL FCC     "JSL"                    *81A6: 4A 53 4C       'JSL'   Initials of James S. Letts
@@ -7566,7 +7566,7 @@ ZC044   JSR     ZD1A8                    *C044: BD D1 A8       '...'
         LDY     #STR_GO                  *C047: 10 8E C0 85    '....'
         LDB     #$02                     *C04B: C6 02          '..'
         LDX     #M0001                   *C04D: 8E 00 01       '...'
-        JSR     STRIP_BIT_6              *C050: BD D2 6A       '..j'
+        JSR     LOAD_LED_CHAR_BUFFER     *C050: BD D2 6A       '..j'
         JSR     ZD088                    *C053: BD D0 88       '...'
         RTS                              *C056: 39             '9'
         JSR     ZD1A8                    *C057: BD D1 A8       '...'
@@ -7585,7 +7585,7 @@ ZC044   JSR     ZD1A8                    *C044: BD D1 A8       '...'
         LEAY    A,Y                      *C072: 31 A6          '1.'
         LDB     #$02                     *C074: C6 02          '..'
         LDX     #M0001                   *C076: 8E 00 01       '...'   skip the first character in the print buffer - contains key press
-        JSR     STRIP_BIT_6              *C079: BD D2 6A       '..j'
+        JSR     LOAD_LED_CHAR_BUFFER     *C079: BD D2 6A       '..j'
         RTS                              *C07C: 39             '9'
 STR_DB  FCC     "DB"                     *C07D: 44 42          'DB'
 STR_DO  FCC     "DO"                     *C07F: 44 4F          'DO'
@@ -7750,7 +7750,7 @@ STR_U   FCC     "U"                      *C1CF: 55             'U'
 ZC1D0   PSHA                             *C1D0: 34 02          '4.'
         LDX     #M0000                   *C1D2: 8E 00 00       '...'
         LDB     #$01                     *C1D5: C6 01          '..'
-        JSR     STRIP_BIT_6              *C1D7: BD D2 6A       '..j'
+        JSR     LOAD_LED_CHAR_BUFFER     *C1D7: BD D2 6A       '..j'
         PULB                             *C1DA: 35 04          '5.'
         CLRA                             *C1DC: 4F             'O'
         TSTB                             *C1DD: 5D             ']'
@@ -7761,7 +7761,7 @@ ZC1E1   ASLA                             *C1E1: 48             'H'
         LDX     #M0001                   *C1E4: 8E 00 01       '...'
         LDY     #STR_OF                  *C1E7: 10 8E C1 F1    '....'
         LEAY    A,Y                      *C1EB: 31 A6          '1.'
-        JSR     STRIP_BIT_6              *C1ED: BD D2 6A       '..j'
+        JSR     LOAD_LED_CHAR_BUFFER     *C1ED: BD D2 6A       '..j'
         RTS                              *C1F0: 39             '9'
 STR_OF  FCC     "OF"                     *C1F1: 4F 46          'OF'
 STR_ON  FCC     "ON"                     *C1F3: 4F 4E          'ON'
@@ -7789,7 +7789,7 @@ STR_E   FCC     "E"                      *C224: 45             'E'
 MC225_via_cvec_c13e LDY     #STR_TRN                 *C225: 10 8E C2 6B    '...k'
         LDX     #M0000                   *C229: 8E 00 00       '...'
         LDB     #$03                     *C22C: C6 03          '..'
-        JSR     STRIP_BIT_6              *C22E: BD D2 6A       '..j'
+        JSR     LOAD_LED_CHAR_BUFFER     *C22E: BD D2 6A       '..j'
         RTS                              *C231: 39             '9'
 MC232_via_cvec_c140 LDA     #$0A                     *C232: 86 0A          '..'
         STA     M7AB3                    *C234: B7 7A B3       '.z.'
@@ -7831,7 +7831,7 @@ MC282_via_cvec_c15c STA     M752C                    *C282: B7 75 2C       '.u,'
 MC289_via_cvec_c15e LDY     #MC29F                   *C289: 10 8E C2 9F    '....'
         LDX     #M0000                   *C28D: 8E 00 00       '...'
         LDB     #$01                     *C290: C6 01          '..'
-        JSR     STRIP_BIT_6              *C292: BD D2 6A       '..j'
+        JSR     LOAD_LED_CHAR_BUFFER     *C292: BD D2 6A       '..j'
         LDX     #M0002                   *C295: 8E 00 02       '...'
         LDA     M752C                    *C298: B6 75 2C       '.u,'
         JSR     ZD251                    *C29B: BD D2 51       '..Q'
@@ -7840,7 +7840,7 @@ MC29F   FCC     "G"                      *C29F: 47             'G'
 MC2A0_via_cvec_c16e LDY     #STR_TST                 *C2A0: 10 8E C3 31    '...1'
         LDX     #M0000                   *C2A4: 8E 00 00       '...'
         LDB     #$03                     *C2A7: C6 03          '..'
-        JSR     STRIP_BIT_6              *C2A9: BD D2 6A       '..j'
+        JSR     LOAD_LED_CHAR_BUFFER     *C2A9: BD D2 6A       '..j'
         RTS                              *C2AC: 39             '9'
 MC2AD_via_cvec_c170 LDA     #$0B                     *C2AD: 86 0B          '..'
         STA     M7AB3                    *C2AF: B7 7A B3       '.z.'
@@ -7857,7 +7857,7 @@ MC2B8_via_cvec_c190 LDA     M7C39                    *C2B8: B6 7C 39       '.|9'
         LDY     #STR_CAL                 *C2CB: 10 8E C3 37    '...7'
 ZC2CF   LDX     #M0000                   *C2CF: 8E 00 00       '...'
         LDB     #$03                     *C2D2: C6 03          '..'
-        JSR     STRIP_BIT_6              *C2D4: BD D2 6A       '..j'
+        JSR     LOAD_LED_CHAR_BUFFER     *C2D4: BD D2 6A       '..j'
         JSR     ZD088                    *C2D7: BD D0 88       '...'
         LDA     M7C39                    *C2DA: B6 7C 39       '.|9'
         BNE     ZC2E4                    *C2DD: 26 05          '&.'
@@ -7902,7 +7902,7 @@ STR_CAL FCC     "CAL"                    *C337: 43 41 4C       'CAL'
 MC33A_via_cvec_c156 LDY     #STR_PED                 *C33A: 10 8E C3 80    '....'
         LDX     #M0000                   *C33E: 8E 00 00       '...'
         LDB     #$03                     *C341: C6 03          '..'
-        JSR     STRIP_BIT_6              *C343: BD D2 6A       '..j'
+        JSR     LOAD_LED_CHAR_BUFFER     *C343: BD D2 6A       '..j'
         RTS                              *C346: 39             '9'
 MC347_via_cvec_c158 LDA     #$09                     *C347: 86 09          '..'
         STA     M7AB3                    *C349: B7 7A B3       '.z.'
@@ -7975,7 +7975,7 @@ STR_P   FCC     "P"                      *C3E4: 50             'P'
 MC3E5_via_cvec_c176 LDY     #STR_BND                 *C3E5: 10 8E C4 28    '...('
         LDX     #M0000                   *C3E9: 8E 00 00       '...'
         LDB     #$03                     *C3EC: C6 03          '..'
-        JSR     STRIP_BIT_6              *C3EE: BD D2 6A       '..j'
+        JSR     LOAD_LED_CHAR_BUFFER     *C3EE: BD D2 6A       '..j'
         RTS                              *C3F1: 39             '9'
 MC3F2_via_cvec_c178 LDA     #$0C                     *C3F2: 86 0C          '..'
         STA     M7AB3                    *C3F4: B7 7A B3       '.z.'
@@ -9312,15 +9312,15 @@ ZD088   LDA     LEDSINGLES_SHADOW        *D088: B6 7A 0D       '.z.'   Get the c
         LDX     #M0000                   *D092: 8E 00 00       '...'
         TST     M752A                    *D095: 7D 75 2A       '}u*'
         BPL     ZD09F                    *D098: 2A 05          '*.'
-        JSR     ZD295                    *D09A: BD D2 95       '...'
+        JSR     SET_CHAR_BIT_6           *D09A: BD D2 95       '...'
         BRA     ZD0A2                    *D09D: 20 03          ' .'
-ZD09F   JSR     ZD2A0                    *D09F: BD D2 A0       '...'
+ZD09F   JSR     CLR_CHAR_BIT_6           *D09F: BD D2 A0       '...'
 ZD0A2   LDX     #M0001                   *D0A2: 8E 00 01       '...'
         TST     M752D                    *D0A5: 7D 75 2D       '}u-'
         BPL     ZD0AF                    *D0A8: 2A 05          '*.'
-        JSR     ZD295                    *D0AA: BD D2 95       '...'
+        JSR     SET_CHAR_BIT_6           *D0AA: BD D2 95       '...'
         BRA     ZD0B2                    *D0AD: 20 03          ' .'
-ZD0AF   JSR     ZD2A0                    *D0AF: BD D2 A0       '...'
+ZD0AF   JSR     CLR_CHAR_BIT_6           *D0AF: BD D2 A0       '...'
 ZD0B2   JSR     ZD0FF                    *D0B2: BD D0 FF       '...'
         RTS                              *D0B5: 39             '9'
 ZD0B6   PSHS    X,DP,D                   *D0B6: 34 1E          '4.'
@@ -9350,9 +9350,9 @@ ZD0CC   TFR     DP,A                     *D0CC: 1F B8          '..'
 ZD0EA   LDX     #M0002                   *D0EA: 8E 00 02       '...'
         STB     M7C3C                    *D0ED: F7 7C 3C       '.|<'
         BEQ     ZD0F7                    *D0F0: 27 05          ''.'
-        JSR     ZD295                    *D0F2: BD D2 95       '...'
+        JSR     SET_CHAR_BIT_6           *D0F2: BD D2 95       '...'
         BRA     ZD0FA                    *D0F5: 20 03          ' .'
-ZD0F7   JSR     ZD2A0                    *D0F7: BD D2 A0       '...'
+ZD0F7   JSR     CLR_CHAR_BIT_6           *D0F7: BD D2 A0       '...'
 ZD0FA   INS                              *D0FA: 32 61          '2a'
         PULS    X,DP,D                   *D0FC: 35 1E          '5.'
         RTS                              *D0FE: 39             '9'
@@ -9381,16 +9381,18 @@ ZD125   JSR     DISPLAY_LED_CHAR         *D125: BD D1 36       '..6'
         LEAS    $03,S                    *D130: 32 63          '2c'
         CLR     M79E1                    *D132: 7F 79 E1       '.y.'
         RTS                              *D135: 39             '9'
+* Subroutine: DISPLAY_LED_CHAR
 * On entry, A = ASCII code of character to be displayed
+* B is non-zero when the decimal point is to be set as well
 DISPLAY_LED_CHAR ANDA    #$3F                     *D136: 84 3F          '.?'    Strip the top bit of the character
-        LDX     #MD16F                   *D138: 8E D1 6F       '..o'
-        CMPA    #'                       *D13B: 81 20          '. '    Is it a space?
+        LDX     #LED_RAW_ALPHA           *D138: 8E D1 6F       '..o'
+        CMPA    #$20                     *D13B: 81 20          '. '    Is it a space?
         BEQ     DISPLAY_SPACE            *D13D: 27 15          ''.'    yes, jump
         CMPA    #$2D                     *D13F: 81 2D          '.-'    is it a '-'?
         BEQ     DISPLAY_HYPHEN           *D141: 27 0D          ''.'    yes, jump
         CMPA    #$30                     *D143: 81 30          '.0'    0x30 = '0'; anything lower is a symbol, higher is alphanumeric
         BLT     LOOKUP_LED_CHAR          *D145: 2D 05          '-.'
-        LDX     #MD15E                   *D147: 8E D1 5E       '..^'   Use a different look up table
+        LDX     #LED_RAW_NUMERIC         *D147: 8E D1 5E       '..^'   Use a different look up table
         SUBA    #$30                     *D14A: 80 30          '.0'    and offset from '0'
 LOOKUP_LED_CHAR LDA     A,X                      *D14C: A6 86          '..'
         BRA     WRITE_RAW_CHAR           *D14E: 20 05          ' .'
@@ -9400,50 +9402,69 @@ DISPLAY_HYPHEN LDA     #$08                     *D150: 86 08          '..'
 * Character to be displayed is a space
 DISPLAY_SPACE CLRA                             *D154: 4F             'O'
 * At this point, A contains the LED segment data for the character to be written
-WRITE_RAW_CHAR TSTB                             *D155: 5D             ']'
+* and B is non-zero if the decimal point is to be set as wel
+WRITE_RAW_CHAR TSTB                             *D155: 5D             ']'     If B non-zero, LED DP needs to be set
         BEQ     INVERT_RAW_CHAR          *D156: 27 02          ''.'
-        ORA     #$04                     *D158: 8A 04          '..'
+        ORA     #%00000100               *D158: 8A 04          '..'    Set the decimal point
 INVERT_RAW_CHAR COMA                             *D15A: 43             'C'     Invert for active low logic
         STA     ,U                       *D15B: A7 C4          '..'    Write to the hardware pointed to by U
         RTS                              *D15D: 39             '9'     ..and we're done
-MD15E   FCB     %11110011,%01000001      *D15E: F3 41          '.A'
-        FCB     %00111011,%01111001      *D160: 3B 79          ';y'
-        FCB     %11001001,%11111000      *D162: C9 F8          '..'
-        FCB     %11111010,%01010001      *D164: FA 51          '.Q'
-        FCB     %11111011,%11111001      *D166: FB F9          '..'
-        FCB     %00000000,%00000000      *D168: 00 00          '..'
+LED_RAW_NUMERIC FCB     %11110011                *D15E: F3             '.'     '0'
+        FCB     %01000001                *D15F: 41             'A'     '1'
+        FCB     %00111011                *D160: 3B             ';'     '2'
+        FCB     %01111001                *D161: 79             'y'     '3'
+        FCB     %11001001                *D162: C9             '.'     '4'
+        FCB     %11111000                *D163: F8             '.'     '5'
+        FCB     %11111010                *D164: FA             '.'     '6'
+        FCB     %01010001                *D165: 51             'Q'     '7'
+        FCB     %11111011                *D166: FB             '.'     '8'
+        FCB     %11111001                *D167: F9             '.'     '9'
+        FCB     %00000000,%00000000      *D168: 00 00          '..'    not used
         FCB     %00000000,%00000000      *D16A: 00 00          '..'
         FCB     %00000000,%00000000      *D16C: 00 00          '..'
         FCB     %00000000                *D16E: 00             '.'
-MD16F   FCB     %00000000,%11011011      *D16F: 00 DB          '..'
-        FCB     %11101010,%10110010      *D171: EA B2          '..'
-        FCB     %01101011,%10111010      *D173: 6B BA          'k.'
-        FCB     %10011010,%11110010      *D175: 9A F2          '..'
-        FCB     %11001011,%00000010      *D177: CB 02          '..'
-        FCB     %01100011,%10001010      *D179: 63 8A          'c.'
-        FCB     %10100010,%01001010      *D17B: A2 4A          '.J'
-        FCB     %01001010,%01101010      *D17D: 4A 6A          'Jj'
-        FCB     %10011011,%10111011      *D17F: 9B BB          '..'
-        FCB     %00001010,%11111000      *D181: 0A F8          '..'
-        FCB     %10101010,%11100011      *D183: AA E3          '..'
-        FCB     %11001000,%11001001      *D185: C8 C9          '..'
-        FCB     %00101011,%01111100      *D187: 2B 7C          '+|'
-        FCB     %01111001,%11100001      *D189: 79 E1          'y.'
-        FCB     %00110000,%10001001      *D18B: 30 89          '0.'
-        FCB     %01111001,%11000001      *D18D: 79 C1          'y.'
-        FCB     %10000110,%00000001      *D18F: 86 01          '..'
-        FCB     %10110111,%01111001      *D191: B7 79          '.y'
-        FCB     %11101100,%01111111      *D193: EC 7F          '..'
-        FCB     %01111001,%11101011      *D195: 79 EB          'y.'
-        FCB     %10000110,%10000000      *D197: 86 80          '..'
-        FCB     %01111110,%10000011      *D199: 7E 83          '~.'
-        FCB     %00110000,%01111100      *D19B: 30 7C          '0|'
-        FCB     %01111001,%11100001      *D19D: 79 E1          'y.'
-        FCB     %00110000,%10001001      *D19F: 30 89          '0.'
-        FCB     %01111001,%11000001      *D1A1: 79 C1          'y.'
-        FCB     %10000110,%10000000      *D1A3: 86 80          '..'
-        FCB     %01111110,%10000011      *D1A5: 7E 83          '~.'
-        FCB     %00111110                *D1A7: 3E             '>'
+LED_RAW_ALPHA FCB     %00000000                *D16F: 00             '.'     ' '
+        FCB     %11011011                *D170: DB             '.'     'A'
+        FCB     %11101010                *D171: EA             '.'     'b'
+        FCB     %10110010                *D172: B2             '.'     'C'
+        FCB     %01101011                *D173: 6B             'k'     'd'
+        FCB     %10111010                *D174: BA             '.'     'E'
+        FCB     %10011010                *D175: 9A             '.'     'F'
+        FCB     %11110010                *D176: F2             '.'     'G'
+        FCB     %11001011                *D177: CB             '.'     'H'
+        FCB     %00000010                *D178: 02             '.'     'I'
+        FCB     %01100011                *D179: 63             'c'     'J'
+        FCB     %10001010                *D17A: 8A             '.'     'K'
+        FCB     %10100010                *D17B: A2             '.'     'L'
+        FCB     %01001010                *D17C: 4A             'J'     'M'
+        FCB     %01001010                *D17D: 4A             'J'     'N'
+        FCB     %01101010                *D17E: 6A             'j'     'O'
+        FCB     %10011011                *D17F: 9B             '.'     'P'
+        FCB     %10111011                *D180: BB             '.'     'Q'
+        FCB     %00001010                *D181: 0A             '.'     'r'
+        FCB     %11111000                *D182: F8             '.'     'S'
+        FCB     %10101010                *D183: AA             '.'     'T'
+        FCB     %11100011                *D184: E3             '.'     'u'
+        FCB     %11001000                *D185: C8             '.'     'v'
+        FCB     %11001001                *D186: C9             '.'     'w'
+        FCB     %00101011                *D187: 2B             '+'     'x'
+        FCB     %01111100                *D188: 7C             '|'     'y'
+        FCB     %01111001                *D189: 79             'y'     'z'
+        FCB     %11100001,%00110000      *D18A: E1 30          '.0'    Here down are some symbolic non-ASCII codings
+        FCB     %10001001,%01111001      *D18C: 89 79          '.y'
+        FCB     %11000001,%10000110      *D18E: C1 86          '..'
+        FCB     %00000001,%10110111      *D190: 01 B7          '..'
+        FCB     %01111001,%11101100      *D192: 79 EC          'y.'
+        FCB     %01111111,%01111001      *D194: 7F 79          '.y'
+        FCB     %11101011,%10000110      *D196: EB 86          '..'
+        FCB     %10000000,%01111110      *D198: 80 7E          '.~'
+        FCB     %10000011,%00110000      *D19A: 83 30          '.0'
+        FCB     %01111100,%01111001      *D19C: 7C 79          '|y'
+        FCB     %11100001,%00110000      *D19E: E1 30          '.0'
+        FCB     %10001001,%01111001      *D1A0: 89 79          '.y'
+        FCB     %11000001,%10000110      *D1A2: C1 86          '..'
+        FCB     %10000000,%01111110      *D1A4: 80 7E          '.~'
+        FCB     %10000011,%00111110      *D1A6: 83 3E          '.>'
 ZD1A8   LDX     #M0000                   *D1A8: 8E 00 00       '...'
         LDB     #$10                     *D1AB: C6 10          '..'
         LEAX    LED_CHAR_BUFFER,X        *D1AD: 30 89 79 C1    '0.y.'
@@ -9546,7 +9567,7 @@ ZD251   TFR     A,B                      *D251: 1F 89          '..'
 * On entry: Y => char string
 * B => char count
 * X => ???
-STRIP_BIT_6 LEAX    LED_CHAR_BUFFER,X        *D26A: 30 89 79 C1    '0.y.'  Set X to point to start of output buffer
+LOAD_LED_CHAR_BUFFER LEAX    LED_CHAR_BUFFER,X        *D26A: 30 89 79 C1    '0.y.'  Set X to point to start of output buffer
 LOOP_NEXT_CHAR_D26E LDA     ,Y+                      *D26E: A6 A0          '..'    Get the next character
         ANDA    #%10111111               *D270: 84 BF          '..'    Zap bit 6 (?)
         STA     ,X+                      *D272: A7 80          '..'    Store character in buffer
@@ -9573,15 +9594,21 @@ LOOP_NEXT_CHAR_D26E LDA     ,Y+                      *D26E: A6 A0          '..' 
         FCB     $04                      *D292: 04             '.'
         FCC     " "                      *D293: 20             ' '
         FCB     $D5                      *D294: D5             '.'
-ZD295   LEAX    LED_CHAR_BUFFER,X        *D295: 30 89 79 C1    '0.y.'
-        LDA     ,X                       *D299: A6 84          '..'
-        ORA     #$40                     *D29B: 8A 40          '.@'
-        STA     ,X                       *D29D: A7 84          '..'
+* Set bit 6 on a single character in the LED char buffer.
+* Not entirely sure why.
+* On entry, X = offset in char buffer to set bit 6 on
+SET_CHAR_BIT_6 LEAX    LED_CHAR_BUFFER,X        *D295: 30 89 79 C1    '0.y.'  X => indexed address in char buffer
+        LDA     ,X                       *D299: A6 84          '..'    A = indexed character
+        ORA     #%01000000               *D29B: 8A 40          '.@'    Set bit 6
+        STA     ,X                       *D29D: A7 84          '..'    Store the char back in place
         RTS                              *D29F: 39             '9'
-ZD2A0   LEAX    LED_CHAR_BUFFER,X        *D2A0: 30 89 79 C1    '0.y.'
-        LDA     ,X                       *D2A4: A6 84          '..'
-        ANDA    #$BF                     *D2A6: 84 BF          '..'
-        STA     ,X                       *D2A8: A7 84          '..'
+* Clear bit 6 on a single character in the LED char buffer.
+* Not entirely sure why.
+* On entry, X = offset in char buffer to clear bit 6 on
+CLR_CHAR_BIT_6 LEAX    LED_CHAR_BUFFER,X        *D2A0: 30 89 79 C1    '0.y.'  X => indexed address in char buffer
+        LDA     ,X                       *D2A4: A6 84          '..'    A = indexed character
+        ANDA    #%10111111               *D2A6: 84 BF          '..'    Cleat bit 6
+        STA     ,X                       *D2A8: A7 84          '..'    Store the char back in place
         RTS                              *D2AA: 39             '9'
 MD2AB   FCB     $D4                      *D2AB: D4             '.'
         FCC     "C"                      *D2AC: 43             'C'
