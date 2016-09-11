@@ -169,6 +169,8 @@ COMMENT  0x8045 Initialize the bank select logic and a shadow variable for it to
 
 COMMENT  0x806B Initialize the interrupt handler trampoline
 
+CONST    0x808D-808E
+
 COMMENT  0x8178 Detect some button pushes
 COMMENT  0x8178 If Enter is pressed on power up, reinitialize the synth (see owner's manual)
 LCOMMENT 0x817B Is Enter pressed?
@@ -189,6 +191,7 @@ LCOMMENT 0x8191 is '5' and '2' also pressed?
 BIN      0x8192
 LCOMMENT 0x8193 No, jump
 LCOMMENT 0x8195 Yes, display the Easter egg
+CONST    0x819A-0x819B 
 
 LABEL    0x81A6 STR_JSL
 LCOMMENT 0x81A6 Initials of James S. Letts
@@ -270,6 +273,14 @@ LABEL    0x85E7 HANDLEIRQ
 
 CONST    0xB271-0xB272 * incorrectly interpreted as address
 
+CONST    0xB35A-0xB35B
+CONST    0xB37F-0xB380
+CONST    0xB76B-0xB76C
+
+CONST    0xBB2F-0xBB30
+
+CONST    0xC065-0xC066
+
 COMMENT  0xC06A This is part of the Data Dump code (p32 of User Manual)
 COMMENT  0xC06A In the section below, A is used as an index into the table of
 COMMENT  0xC06A 4 strings below starting at STR_DB
@@ -282,24 +293,55 @@ LABEL    0xC081 STR_DA
 LABEL    0xC083 STR_DR
 LABEL    0xC085 STR_GO
 
+CONST    0xC0A9-0xC0AA
+CONST    0xC0AF-0xC0B0
+
 LABEL    0xC1CF STR_U
+
+CONST    0xC1D3-0xC1D4
+CONST    0xC1E5-0xC1E6
 
 LABEL    0xC1F1 STR_OF
 LABEL    0xC1F3 STR_ON
 
+CONST    0xC1F6-0xC1F7
+CONST    0xC1FC-0xC1FD
+
 LABEL    0xC224 STR_E
+CONST    0xC22A-0xC22B
 
 LABEL    0xC26B STR_TRN
+
+CONST    0xC26F-0xC270
+CONST    0xC275-0xC276
+
+CONST    0xC28E-0xC28F
+CONST    0xC2A5-0xC2A6
+
+CONST    0xC2D0-0xC2D1
+
+CONST    0xC2F0-0xC2F1
+
+CONST    0xC30F-0xC310
+CONST    0xC315-0xC316
+CONST    0xC31B-0xC31C
+CONST    0xC32B-0xC32C
 
 LABEL    0xC331 STR_TST
 LABEL    0xC334 STR_GO
 LABEL    0xC337 STR_CAL
+CONST    0xC33F-0xC340
+CONST    0xC35A-0xC35B
 
 LABEL    0xC380 STR_PED
+CONST    0xC384-0xC385
+CONST    0xC38A-0xC38B
 
 LABEL    0xC3B3 STR_I
+CONST    0xC3B5-0xC3B6
+CONST    0xC3BB-0xC3BC
 LABEL    0xC3E4 STR_P
-
+CONST    0xC3EA-0xC3EB
 LABEL    0xC428 STR_BND
 
 LABEL    0xC457 GETMIDIRX
@@ -311,6 +353,10 @@ COMMENT  0xD088 GDE: I think this is the subroutine that displays/refreshes the 
 LCOMMENT 0xD088 Get the current state of the individual decimal point LEDs
 LCOMMENT 0xD08B LED logic is active low so invert the value
 LCOMMENT 0xD08C write the value to the hardware
+CONST    0xD093-0xD094
+CONST    0xD0A3-0xD0A4
+CONST    0xD0E3-0xD0E4
+CONST    0xD0EB-0xD0EC
 
 COMMENT  0xD136 Subroutine: DISPLAY_LED_CHAR
 COMMENT  0xD136 On entry, A = ASCII code of character to be displayed
@@ -385,6 +431,7 @@ LCOMMENT 0xD188 'y'
 LCOMMENT 0xD189 'z'
 LCOMMENT 0xD18A Here down are some symbolic non-ASCII codings
 
+CONST    0xD1A9-0xD1AA
 COMMENT  0xD26A Something to do with 7-seg display.
 COMMENT  0xD26A Strips bit 6 from each character in a string
 COMMENT  0xD26A On entry: Y => char string
@@ -422,4 +469,9 @@ LCOMMENT 0xD2A8 Store the char back in place
 
 
 CONST    0xD630-0xD631
+CONST    0xDBA1-0xDBA2
+CONST    0xDBF2-0xDBF3
+CONST    0xDC0F-0xDC10
+CONST    0xDD34-0xDD35
+
 END
