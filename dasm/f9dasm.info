@@ -209,6 +209,10 @@ LABEL    0x81EF LOOP_81EF
 LCOMMENT 0x8200 decrement loop counter...
 LCOMMENT 0x8203 ...and loop again
 
+BIN      0x828D
+BIN      0x829B
+BIN      0x82A9
+
 COMMENT 0x83EB Subroutine: 2000-iteration delay
 LABEL    0x83EB DELAY_2000ITER
 LCOMMENT 0x83EB save D
