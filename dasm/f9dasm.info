@@ -117,7 +117,10 @@ LABEL 0x1000 DACBASE
 LABEL 0x1400 UARTBASE
 LABEL 0x1406 UARTCSR
 LABEL 0x1407 UARTDATA
-LABEL 0x1600 PITBASE
+LABEL 0x1600 PITCNT0REG
+LABEL 0x1601 PITCNT1REG
+LABEL 0x1602 PITCNT2REG
+LABEL 0x1603 PITCTRLREG
 LABEL 0x1800 PUSHBTN07
 LABEL 0x1801 PUSHBTNMISC
 LABEL 0x1D00 MISCBITS
@@ -147,6 +150,8 @@ RMB 0xE1E7-0xFFF1
 CVEC 0xFFF0-0xFFFF
 
 LABEL    0x8000 VERSION
+LABEL    0x8001 VERSION2
+LABEL    0x8002 VERSION3
 LABEL    0x800C WARM_RESTART
 LCOMMENT 0x800C disable interrupts
 LCOMMENT 0x800E initialize stack location
@@ -164,8 +169,15 @@ COMMENT  0x803B Delay by looping 15000 times
 LCOMMENT 0x803B X = 15000 dec.
 CONST    0x803C-0x803D
 LABEL    0x803E DELAYLOOP_803E
-
 COMMENT  0x8045 Initialize the bank select logic and a shadow variable for it to zero.
+COMMENT  0x804D Initialize the primary Programmable Interval Timer (PIT)
+LCOMMENT 0x804D Select cntr 2, R/W LSB then MSB, Mode 3, binary
+BIN      0x804E
+COMMENT  0x8052 Next 4 opcodes load 0x9C40 - 40000 dec into counter 2 - 50Hz at 2MHz
+LCOMMENT 0x805C Select cntr 0, R/W LSB only, Mode 0, binary
+BIN      0x805D
+LCOMMENT 0x8061 Select cntr 1, R/W LSB then MSB, Mode 0, binary
+BIN      0x8062
 
 COMMENT  0x806B Initialize the interrupt handler trampoline
 
