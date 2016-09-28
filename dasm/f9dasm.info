@@ -185,6 +185,7 @@ COMMENT  0x803B Delay by looping 15000 times
 LCOMMENT 0x803B X = 15000 dec.
 CONST    0x803C-0x803D
 LABEL    0x803E DELAYLOOP_803E
+LCOMMENT 0x8042 Start the 440Hz counters
 COMMENT  0x8045 Initialize the bank select logic and a shadow variable for it to zero.
 COMMENT  0x804D Initialize the primary Programmable Interval Timer (PIT)
 LCOMMENT 0x804D Select cntr 2, R/W LSB then MSB, Mode 3, binary
@@ -196,6 +197,8 @@ LCOMMENT 0x8061 Select cntr 1, R/W LSB then MSB, Mode 0, binary
 BIN      0x8062
 
 COMMENT  0x806B Initialize the interrupt handler trampoline
+
+LCOMMENT 0x8071 Initialize the 440Hz counters again??
 
 CONST    0x808D-808E
 
@@ -237,9 +240,16 @@ LABEL    0x81EF LOOP_81EF
 LCOMMENT 0x8200 decrement loop counter...
 LCOMMENT 0x8203 ...and loop again
 
+LABEL    0x828C INIT_T1T4
+COMMENT  0x828C Initialise counters T1-T4
+LCOMMENT 0x828C Sel counter 0, rw lsb then msb, Mode 3, binary
 BIN      0x828D
+LCOMMENT 0x829A Move up to counter 1
 BIN      0x829B
+LCOMMENT 0x82A8 and counter 2
 BIN      0x82A9
+COMMENT  0x82B6 0x11C1 = 4545 dec; sets 440Hz timer on each counter
+CONST    0x82B7-0x82B8
 
 COMMENT 0x83EB Subroutine: 2000-iteration delay
 LABEL    0x83EB DELAY_2000ITER

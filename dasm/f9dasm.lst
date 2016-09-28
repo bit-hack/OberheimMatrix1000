@@ -127,7 +127,6 @@ M1086   EQU     $1086
 M108A   EQU     $108A
 M108C   EQU     $108C
 M1102   EQU     $1102
-M11C1   EQU     $11C1
 UARTCSR EQU     $1406
 UARTDATA EQU     $1407
 PITCNT1REG EQU     $1601
@@ -436,7 +435,7 @@ WARM_RESTART SEIF                             *800C: 1A 50          '.P'    disa
         LDX     #$3A98                   *803B: 8E 3A 98       '.:.'   X = 15000 dec.
 DELAYLOOP_803E DEX                              *803E: 30 1F          '0.'
         BNE     DELAYLOOP_803E           *8040: 26 FC          '&.'
-        JSR     Z828C                    *8042: BD 82 8C       '...'
+        JSR     INIT_T1T4                *8042: BD 82 8C       '...'   Start the 440Hz counters
 * Initialize the bank select logic and a shadow variable for it to zero.
         LDA     #$00                     *8045: 86 00          '..'
         STA     BANKSELECT               *8047: B7 1D 80       '...'
@@ -458,7 +457,7 @@ DELAYLOOP_803E DEX                              *803E: 30 1F          '0.'
 * Initialize the interrupt handler trampoline
         LDX     #HANDLEIRQ               *806B: 8E 85 E7       '...'
         STX     IRQHANDLERADDR           *806E: BF 79 F9       '.y.'
-        JSR     Z828C                    *8071: BD 82 8C       '...'
+        JSR     INIT_T1T4                *8071: BD 82 8C       '...'   Initialize the 440Hz counters again??
         CLRA                             *8074: 4F             'O'
         CLRB                             *8075: 5F             '_'
         STD     M722D                    *8076: FD 72 2D       '.r-'
@@ -680,22 +679,24 @@ M8220   FCB     $00,$00,$1C,$00,$08,$00  *8220: 00 00 1C 00 08 00 '......'
         FCB     $11                      *8284: 11             '.'
         FCC     "j"                      *8285: 6A             'j'
         FCB     $04,$03,$0C,$03,$B6,$E8  *8286: 04 03 0C 03 B6 E8 '......'
-Z828C   LDA     #%00110110               *828C: 86 36          '.6'
+* Initialise counters T1-T4
+INIT_T1T4 LDA     #%00110110               *828C: 86 36          '.6'    Sel counter 0, rw lsb then msb, Mode 3, binary
         STA     >TMR1CTRLREG             *828E: B7 00 03       '...'
         STA     TMR2CTRLREG              *8291: B7 04 03       '...'
         STA     TMR3CTRLREG              *8294: B7 08 03       '...'
         STA     TMR4CTRLREG              *8297: B7 0C 03       '...'
-        LDA     #%01110110               *829A: 86 76          '.v'
+        LDA     #%01110110               *829A: 86 76          '.v'    Move up to counter 1
         STA     >TMR1CTRLREG             *829C: B7 00 03       '...'
         STA     TMR2CTRLREG              *829F: B7 04 03       '...'
         STA     TMR3CTRLREG              *82A2: B7 08 03       '...'
         STA     TMR4CTRLREG              *82A5: B7 0C 03       '...'
-        LDA     #%10110110               *82A8: 86 B6          '..'
+        LDA     #%10110110               *82A8: 86 B6          '..'    and counter 2
         STA     >TMR1CTRLREG             *82AA: B7 00 03       '...'
         STA     TMR2CTRLREG              *82AD: B7 04 03       '...'
         STA     TMR3CTRLREG              *82B0: B7 08 03       '...'
         STA     TMR4CTRLREG              *82B3: B7 0C 03       '...'
-        LDD     #M11C1                   *82B6: CC 11 C1       '...'
+* 0x11C1 = 4545 dec; sets 440Hz timer on each counter
+        LDD     #$11C1                   *82B6: CC 11 C1       '...'
         STB     >TMR1CNT0REG             *82B9: F7 00 00       '...'
         STA     >TMR1CNT0REG             *82BC: B7 00 00       '...'
         STB     >TMR1CNT1REG             *82BF: F7 00 01       '...'
@@ -6461,7 +6462,7 @@ ZB6B3   DECB                             *B6B3: 5A             'Z'
         PULD                             *B6B9: 35 06          '5.'
         RTS                              *B6BB: 39             '9'
 ZB6BC   SEIF                             *B6BC: 1A 50          '.P'
-        JSR     Z828C                    *B6BE: BD 82 8C       '...'
+        JSR     INIT_T1T4                *B6BE: BD 82 8C       '...'
         LDA     M7223                    *B6C1: B6 72 23       '.r#'
         STA     M7203                    *B6C4: B7 72 03       '.r.'
         LDA     #$01                     *B6C7: 86 01          '..'
