@@ -111,14 +111,7 @@ M0F09   EQU     $0F09
 M0F1C   EQU     $0F1C
 M0FFF   EQU     $0FFF
 DACBASE EQU     $1000
-M1004   EQU     $1004
 M1008   EQU     $1008
-M100A   EQU     $100A
-M100E   EQU     $100E
-M1086   EQU     $1086
-M108A   EQU     $108A
-M108C   EQU     $108C
-M1102   EQU     $1102
 UARTCSR EQU     $1406
 UARTDATA EQU     $1407
 PITCNT1REG EQU     $1601
@@ -536,16 +529,16 @@ Z8097   TFR     A,DP                     *8097: 1F 8B          '..'
         STD     M607D                    *80EA: DD 7D          '.}'
         LDD     ,X++                     *80EC: EC 81          '..'
         STD     M607F                    *80EE: DD 7F          '..'
-        LDD     #M100E                   *80F0: CC 10 0E       '...'
+        LDD     #$100E                   *80F0: CC 10 0E       '...'
         ADDD    M7207                    *80F3: F3 72 07       '.r.'
         STD     M6081                    *80F6: DD 81          '..'
-        LDD     #M100A                   *80F8: CC 10 0A       '...'
+        LDD     #$100A                   *80F8: CC 10 0A       '...'
         ADDD    M7207                    *80FB: F3 72 07       '.r.'
         STD     M6083                    *80FE: DD 83          '..'
-        LDD     #M1102                   *8100: CC 11 02       '...'
+        LDD     #$1102                   *8100: CC 11 02       '...'
         ADDD    M7207                    *8103: F3 72 07       '.r.'
         STD     M6085                    *8106: DD 85          '..'
-        LDD     #M108C                   *8108: CC 10 8C       '...'
+        LDD     #$108C                   *8108: CC 10 8C       '...'
         ADDD    M7207                    *810B: F3 72 07       '.r.'
         STD     M6087                    *810E: DD 87          '..'
         LDD     ,X++                     *8110: EC 81          '..'
@@ -560,20 +553,20 @@ Z8097   TFR     A,DP                     *8097: 1F 8B          '..'
         STA     M6030                    *8122: 97 30          '.0'
         LDA     ,X+                      *8124: A6 80          '..'
         STA     M60A4                    *8126: 97 A4          '..'
-        LDD     #M1004                   *8128: CC 10 04       '...'
+        LDD     #$1004                   *8128: CC 10 04       '...'
         ADDD    M7207                    *812B: F3 72 07       '.r.'
         STD     M608D                    *812E: DD 8D          '..'
-        LDD     #M1008                   *8130: CC 10 08       '...'
+        LDD     #$1008                   *8130: CC 10 08       '...'
         ADDD    M7207                    *8133: F3 72 07       '.r.'
         STD     M608F                    *8136: DD 8F          '..'
-        LDD     #M1086                   *8138: CC 10 86       '...'
+        LDD     #$1086                   *8138: CC 10 86       '...'
         ADDD    M7207                    *813B: F3 72 07       '.r.'
         STD     M6095                    *813E: DD 95          '..'
-        LDD     #M108A                   *8140: CC 10 8A       '...'
+        LDD     #$108A                   *8140: CC 10 8A       '...'
         ADDD    M7207                    *8143: F3 72 07       '.r.'
         STD     M6097                    *8146: DD 97          '..'
         LDD     M7207                    *8148: FC 72 07       '.r.'
-        ADDD    #M0010                   *814B: C3 00 10       '...'
+        ADDD    #$0010                   *814B: C3 00 10       '...'
         STD     M7207                    *814E: FD 72 07       '.r.'
         LDA     M7200                    *8151: B6 72 00       '.r.'
         ADDA    #$03                     *8154: 8B 03          '..'
